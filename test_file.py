@@ -4,3 +4,5 @@ print(a+b)
 A = "Alpha"
 B = "Beta"
 print(A+B)
+Car = "Car"
+print(Car)
