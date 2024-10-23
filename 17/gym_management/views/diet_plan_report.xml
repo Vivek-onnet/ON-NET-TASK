@@ -1,0 +1,60 @@
+<odoo>
+    <data>
+        <template id="diet_plan_pdf_report">
+            <t t-call="web.external_layout">
+                <t t-foreach="docs" t-as="doc">
+                    <div class="page">
+                        <main> <!-- Add the <main> tag here -->
+
+                            <h1 class="text-center"><t t-esc="doc.name"/> Report</h1><br/>
+<!--                            <h2><t t-esc="doc.name"/></h2>-->
+                             <h2>Description</h2>
+                            <p>
+                                <span>
+                                    <t t-esc="doc.description"/>
+                                </span>
+                            </p>
+                            <br/>
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Diet Food</th>
+                                        <th>Quantity</th>
+                                        <th>Consume at</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.diet_plan_id" t-as="diet">
+                                        <tr>
+                                            <td>
+                                                <t t-esc="diet.name"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="diet.quantity"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="diet.time"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </main>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+
+        <record model="ir.actions.report" id="diet_plan_pdf_reports_action">
+            <field name="name">Diet Plan Report</field>
+            <field name="model">gym_management.diet_plan</field> <!-- Correct model reference here -->
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">gym_management.diet_plan_pdf_report</field>
+            <field name="report_file">gym_management.diet_plan_pdf_report</field>
+            <field name="print_report_name">'Diet-Plan-Report'</field>
+            <field name="binding_model_id" ref="model_gym_management_diet_plan"/> <!-- Correct model binding here -->
+            <field name="binding_type">report</field>
+        </record>
+    </data>
+</odoo>

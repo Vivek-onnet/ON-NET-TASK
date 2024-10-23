@@ -1,0 +1,101 @@
+<odoo>
+    <data>
+
+        <!--        Form View for Gym Invoice -->
+        <record id="gym_invoices_form_view" model="ir.ui.view">
+            <field name="name">gym.invoices.form.view</field>
+            <field name="model">account.move</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute name="domain">[('company_type', '=', 'person')]</attribute>
+<!--                    <attribute name="context">{'form_view_ref': 'gym_management.view_partner_form_gym_management_form'}</attribute>-->
+                </xpath>
+
+                <xpath expr="//page[@id='other_tab_entry']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//page[@id='other_tab']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//page[@id='invoice_tab']//tree//field[@name='product_id']" position="attributes">
+<!--                    <attribute name="context">{'form_view_ref': 'gym_management.view_gym_membership'}</attribute>-->
+
+                </xpath>
+
+            </field>
+        </record>
+
+        <!--        Tree View for Gym Invoice -->
+        <record id="gym_invoices_tree_view" model="ir.ui.view">
+            <field name="name">gym.invoices.tree.view</field>
+            <field name="model">account.move</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="invoice_partner_display_name"/>
+                    <field name="invoice_date"/>
+                    <field name="invoice_date_due" widget="remaining_days" optional="show"
+                           invisible="payment_state in ('paid', 'in_payment', 'reversed') or state == 'cancel'"
+                           on_change="1"/>
+                    <field name="amount_untaxed_signed" string="Tax Excluded"/>
+                    <field name="amount_tax_signed" string="Tax" sum="Total"/>
+                    <field name="amount_total_signed" string="Total" sum="Total"/>
+                    <!--                    <field name="amount_total_in_currency_signed" string="Total in Currency"/>-->
+                    <field name="payment_state" string="Payment" widget="badge"
+                           decoration-danger="payment_state == 'not_paid'"
+                           decoration-warning="payment_state in ('partial', 'in_payment')"
+                           decoration-success="payment_state in ('paid', 'reversed')" optional="show"/>
+                    <field name="state" widget="badge" decoration-success="state == 'posted'"
+                           decoration-info="state == 'draft'" optional="show" on_change="1"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <!--        Search View for Gym Invoice -->
+        <record id="gym_invoices_search_view" model="ir.ui.view">
+            <field name="name">gym.invoices.search.view</field>
+            <field name="model">account.move</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="invoice_partner_display_name"/>
+                   <field name="name"/>
+                    <filter string='User' name="invoice_partner_display_name" domain="[]"
+                            context="{'group_by' : 'invoice_partner_display_name'}"/>
+                </search>
+            </field>
+        </record>
+
+
+        <!-- actions opening views on models -->
+        <record id="action_gym_invoices_window"
+                model="ir.actions.act_window"> <!--  model="ir.actions.act_window" use for define action of view -->
+            <field name="name">Gym Invoices Window</field>
+            <field name="res_model">account.move</field>
+            <!-- res_model name should be also same as DATABASE table name -->
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('for_gym','=',True),('move_type', '=', 'out_invoice')]</field>
+             <field name="context">{'default_move_type': 'out_invoice'}</field>
+            <field name="search_view_id" ref="gym_invoices_search_view"/>
+        </record>
+
+
+        <record id="action_gym_move_out_refund_type" model="ir.actions.act_window">
+            <field name="name">Gym Credit Notes</field>
+            <field name="res_model">account.move</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('for_gym','=',True),('move_type', '=', 'out_refund')]</field>
+            <field name="context">{'default_move_type': 'out_refund', 'display_account_trust': True}</field>
+            <field name="search_view_id" ref="gym_invoices_search_view"/>
+        </record>
+
+
+    </data>
+</odoo>

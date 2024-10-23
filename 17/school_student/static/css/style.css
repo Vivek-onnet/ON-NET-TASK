@@ -1,0 +1,177 @@
+/* Container with Animated Background */
+.classic-background {
+    background: linear-gradient(-45deg, #1e1e1e, #000000, #1e1e1e, rgb(0, 0, 0));
+    background-size: 400% 400%;
+    animation: gradientAnimation 15s ease infinite;
+    min-height: 100vh;
+    padding: 50px 0;
+    background-color: #52eed7;
+    border-radius: 30px;
+    font-family: Geneva, Verdana, sans-serif;
+
+}
+
+/* Gradient Animation */
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Student Information Card with Glass Blur Effect */
+.student-card {
+    font-family: system-ui;
+    background: rgba(255, 255, 255, 0.1); /* White with transparency */
+    backdrop-filter: blur(10px); /* Glass Blur Effect */
+    -webkit-backdrop-filter: blur(10px); /* For Safari */
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Border for Glass Effect */
+    color: #000000; /* White Text */
+     /* White Text */
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* Glassy Shadow */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+
+}
+
+/* Add Hover Effect to Student Cards */
+.student-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.69);
+    background-color: rgba(51, 64, 87, 0.76);
+    backdrop-filter: blur(60px); /* Blur effect */
+    -webkit-backdrop-filter: blur(100px);
+}
+
+.student-card-box:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.69);
+    /*background-color: rgba(54, 60, 80, 0.32);*/
+}
+
+.animated-background {
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradientAnimation 5s ease infinite;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.animated-background:hover {
+    transform: translateY(-10px);
+    animation: gradientAnimation 3s ease infinite;
+    backdrop-filter: blur(100px); /* Blur effect */
+    -webkit-backdrop-filter: blur(100px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* Glassy Shadow */
+}
+
+
+/* Additional Styling for Text */
+.text-stylish {
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.text-stylish:hover {
+     color: #ffffff; /* Brighten the color on hover */
+  text-shadow: 0 0 6px rgb(0, 0, 0); /* Change text color on hover */
+}
+
+
+/*!* Custom Container for Padding *!*/
+/*.container-custom {*/
+/*    padding: 30px;*/
+/*}*/
+
+/* Centering and Styling the Header */
+.text-center h1.animated-header {
+    font-size: 36px;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.text-center p.animated-subheader {
+    font-size: 18px;
+    color: #d1d1d1;
+}
+
+
+
+
+
+
+
+/* Keyframes for Floating Animation */
+@keyframes imgFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Gradient Animation */
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.container-custom {
+    /*background: linear-gradient(-45deg, #1e1e1e, #52eed7, #1e1e1e, rgb(220, 118, 119));*/
+    background-color: #ffffff;
+    padding: 80px;
+    text-align: center;
+    max-width: 1700px;
+    margin: 0 auto;
+    border-radius: 30px;
+
+
+}
+
+/* Image Animation */
+.img-animate {
+    animation: imgFloat 5s ease-in-out infinite;
+}
+
+/* Footer Styling */
+footer {
+    /*background-color: #333;*/
+    color: rgba(46, 44, 44, 0.9);
+    /*padding: 15px 30px;*/
+    text-align: center;
+    font-size: 1rem;
+    border-top: 3px solid #ff7e5f;
+    position: relative;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.15); /* Semi-transparent background */
+    border-radius: 45px; /* Rounded corners */
+    padding: 20px; /* Padding inside the card */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    backdrop-filter: blur(60px); /* Blur effect */
+    -webkit-backdrop-filter: blur(40px); /* Safari support */
+}
+
+header {
+    /*color: white;*/
+    color: rgba(46, 44, 44, 0.9);
+    text-align: center;
+    font-size: 1.5rem;
+    border-bottom: 3px solid #ff7e5f;
+    position: relative;
+    background: rgba(255, 255, 255, 0.15); /* Semi-transparent background */
+    border-radius: 45px; /* Rounded corners */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    backdrop-filter: blur(60px); /* Blur effect */
+    -webkit-backdrop-filter: blur(40px); /* Safari support */
+}
+html {
+    scroll-behavior: smooth;
+}

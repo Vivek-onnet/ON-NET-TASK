@@ -1,0 +1,401 @@
+<odoo>
+
+    <data>
+
+        <!-- explicit list view definition of STUDENT -->
+
+        <record model="ir.ui.view" id="school_student.list">
+            <field name="name">school_student list</field>
+            <field name="model">school.student</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="roll_no"/>
+                    <field name="name"/>
+                    <field name="school_id"/>
+                    <field name="virtual_class"/>
+                    <field name="school_address"/>
+                    <field name="gender"/>
+                    <field name="age"/>
+
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="school_student.form">
+            <field name="name">school_student form</field>
+            <field name="model">school.student</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+<!--                    <header>-->
+
+<!--&lt;!&ndash;                        <button name="read_group_orm" string="check client action" type="object" class="oe_highlight"/>&ndash;&gt;-->
+
+<!--                        &lt;!&ndash;            This is an OBJECT button , which will open the wizard               &ndash;&gt;-->
+<!--                        <button name="wiz_open" string="wiz open" type="object" class="oe_highlight"/>-->
+<!--                        <button name="print_custom_report" string="BONOFIDE" type="object" />-->
+
+                        <!--         This is an ACTION button , which will open the wizard   -->
+<!--                        <button name="school_student.student_fees_update_action" string="wiz open using Action"-->
+<!--                                type="action" class="oe_highlight"/>-->
+
+<!--                    </header>-->
+<!--                    <field name="image" widget="image" class="oe_avatar"/>-->
+                    <group>
+                        <group>
+                            <field name="roll_no"/>
+                            <field name="name"/>
+                            <!--                  <field name="city" string="School City" />-->
+                            <!--                  widget="selection" options="{'no_create': True , 'no_open': True}"-->
+                            <field name="school_id" string="School list"
+                                   domain="[('virtual_class', '=', True) , ('school_type', '!=', False)]"/>  <!--  domain use for filter in Many2One field, domain = [('model's_field_name', 'condition / operator (=,!=,>,<,<=,>=)', 'value')] -->
+                            <!--  Options {Dictionary} use for give choice in field , here we stop create new record in Many2One field by using "no_create" = True and 'no_open' = True use for not open record in pop up -->
+                            <!--  widget="selection" use for Make selection type of field -->
+                            <field name="hobby_list" string="Hobby" widget="many2many_tags"/>
+                            <field name="gender" string="Gender"/>
+                        </group>
+                        <group>
+                            <field name="bdate" invisible="student_fees == 0" readonly="student_fees == 1200"
+                                   required="student_fees == 2000"/>
+                            <field name="age"/>
+                            <field name="student_fees"/>
+                            <field name="currency_id" string="Currency" invisible="1"/>
+                            <field name="total_fees" widget="monetary"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    <record id="school_student.kanban" model="ir.ui.view">
+            <field name="name">school_student kanban</field>
+            <field name="model">school.student</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile">
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_content oe_kanban_global_click" >
+
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Name : </strong>
+                                        <field name="name" string="Student Name"/>
+                                    </div>
+
+                                    <div class="col-8">
+                                        <strong>School Name : </strong>
+                                        <field name="school_id" string="School Name"/>
+                                    </div>
+
+
+                                    <div class="col-8">
+                                        <strong>DOB : </strong>
+                                        <field name="bdate"/>
+                                    </div>
+
+                                    <div class="col-6">
+                                        <strong>Age : </strong>
+                                        <field name="age">Age</field>
+                                    </div>
+
+
+
+                                    <div class="col-6">
+                                        <span class="float-end"><field name="image" widget="image" class="oe_avatar"></field>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+
+
+
+        <!-- explicit list view definition of HOBBY -->
+
+        <record model="ir.ui.view" id="hobby_list">
+            <field name="name">Hobby Tree</field>
+            <field name="model">hobby</field> <!--  model name  should be same as DATABASE table name -->
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+
+
+                </tree>
+            </field>
+        </record>
+
+
+        <record model="ir.ui.view" id="hobby_form_view">
+            <field name="name">hobby.form.view</field>
+            <field name="model">hobby</field>
+            <field name="arch" type="xml">
+                <form>
+
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="selection"/>
+                            <field name="partner_name" string="Partner Name"/>
+                            <!--                  <field name="bdate" invisible = "student_fees == 0"  readonly = "student_fees == 1200" required = "student_fees == 2000"  />-->
+
+                            <field name="partner2_name" invisible="selection == 'one'" required="selection == 'two'"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!--    """################  VIEW INHERITANCE : ################"""  -->
+
+        <!--    View Inheritance:   -->
+        <!-- After create the inherited model class named "SchoolProfile" in models.py
+                                    then  make proper views for this inherited model in views.xml of this module.-->
+
+        <record model="ir.ui.view" id="school_extend_form">
+            <field name="name">school_extended form</field>
+            <field name="model">school.profile</field> <!--  model name  should be same as DATABASE table name -->
+            <field name="inherit_id" ref="school.school_form_view"/>
+            <field name="arch" type="xml">
+
+                <field name="description" position="after">
+
+                    <field name="school_list" groups="school.access_student_high_user_group">
+                        <tree>
+                            <field name="name" string="Name"/>
+                            <field name="gender"/>
+
+                        </tree>
+                        <form>
+                            <group>
+                                <field name="name" string="Name"/>
+                                <field name="school_id" string="School Name" />
+
+                            </group>
+                        </form>
+                    </field>
+                </field>
+
+            </field>
+        </record>
+
+<!--  """################  WINDOWS ACTIONS : ################"""  -->
+
+    <!-- Purpose: Most common action type; used to present model views (e.g., list, form).-->
+
+            <!-- res_model: The model to present views for.-->
+            <!-- view_mode : define specific page type for view. -->
+            <!-- res_id (optional): Specifies the record to load if the default view is form.-->
+            <!-- search_view_id (optional): Custom search view to load.-->
+            <!-- target (optional): Specifies whether to open in the main area, full screen, or dialog. -->
+            <!-- context (optional): Additional context data.-->
+            <!-- domain (optional): Filtering domain for view queries.-->
+            <!-- limit (optional): Number of records to display by default.-->
+
+        <!-- window actions of STUDENT -->
+        <record model="ir.actions.act_window"
+                id="school_student.action_window">  <!--  model="ir.actions.act_window" use for define action of view &&& id should be same in menuitem -->
+            <field name="name">School Student Window</field>
+            <field name="res_model">school.student</field> <!-- res_model name should be also same as DATABASE table name -->
+            <field name="view_mode">kanban,tree,form</field>
+        </record>
+
+        <!-- actions of HOBBY -->
+
+        <record model="ir.actions.act_window"
+                id="hobby_action_window">  <!--  model="ir.actions.act_window" use for define action of view -->
+            <field name="name">Hobby Window</field>
+            <field name="res_model">hobby</field> <!-- res_model name should be also same as DATABASE table name -->
+            <field name="view_mode">tree,form</field>
+        </record>
+
+
+<!--""################# SERVER ACTION : ################"""
+
+    # Purpose: Execute server-side logic (e.g., Python code, record creation).
+    # Execution Options:
+        # Execute Python Code: Runs Python code.
+        # Create a new Record: Creates a new record with specified values.
+        # Write on a Record: Updates a record with new values.
+        # Execute several actions: Triggers multiple server actions.-->
+
+        <record model="ir.actions.server" id="school_student.action_server">
+            <field name="name">school_student server</field>
+            <field name="model_id" ref="model_school_student"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = {
+                "type": "ir.actions.act_window",
+                "view_mode": "tree,form",
+                "res_model": model._name,
+                }
+            </field>
+        </record>
+
+    <!--    """################  SERVER ACTIONS : ################"""
+    # Purpose: Execute server-side logic (e.g., Python code, record creation).
+    # Execution Options:
+        # Execute Python Code: Runs Python code.
+        # Create a new Record: Creates a new record with specified values.
+        # Write on a Record: Updates a record with new values.
+        # Execute several actions: Triggers multiple server actions.-->
+
+         <record model="ir.actions.server" id="server_code_action">
+            <field name="name">server code action</field>
+            <field name="model_id" ref="school_student.model_school_student"/>
+            <field name="state">code</field>
+            <field name="code">model.server_code()</field>
+        </record>
+
+
+
+
+
+<!--    """################  VIEW INHERITANCE : ################"""  -->
+
+        <!--    View Inheritance:   -->
+        <!-- After create the inherited model class named "SchoolProfile" in models.py
+                                    then  make proper views for this inherited model in views.xml of this module.-->
+
+        <record id="school_or_student_form_view" model="ir.ui.view">  <!-- model="ir.ui.view" use for define view -->
+            <field name="name">school.or.student.form.view</field>
+            <!-- record name and record id should be same -->
+            <!-- diff. is id contain "_" and name contain "." -->
+            <field name="model">school.profile</field>  <!--  model name  should be same as DATABASE table name -->
+            <field name="inherit_id" ref="school.school_form_view"/> <!--  ref == External ID of inherited Model -->
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="full_name" string="full name"/>
+                </field>
+            </field>
+        </record>
+
+
+        <!--    View Inheritance:   -->
+        <!-- After create the inherited model class named "HospitalPatientInherited" in models.py
+                                    then  make proper views for this inherited model in views.xml of this module.-->
+
+<!--        <record id="view_hobby_form_inherited" model="ir.ui.view">  &lt;!&ndash; model="ir.ui.view" use for define view &ndash;&gt;-->
+<!--            <field name="name">view.hobby.form.inherited</field>-->
+<!--            <field name="model">hospital.patient</field> &lt;!&ndash;  model name  should be same as DATABASE table name &ndash;&gt;-->
+<!--            <field name="inherit_id"-->
+<!--                   ref="hospital.view_hospital_patient_form"/>  &lt;!&ndash;  ref == External ID of inherited Model &ndash;&gt;-->
+<!--            <field name="arch" type="xml">-->
+<!--                <field name="date_of_birth" position="after">-->
+<!--                    <field name="selection" string="p name"/>-->
+<!--                </field>-->
+<!--            </field>-->
+<!--        </record>-->
+
+
+        <!--<record id="view_hobby_form_inherited" model="ir.ui.view">  &lt;!&ndash; model="ir.ui.view" use for define view &ndash;&gt;-->
+        <!--        <field name="name">view.hobby.form.inherited</field>-->
+        <!--        <field name="model">hospital.patient</field> &lt;!&ndash;  model name  should be same as DATABASE table name &ndash;&gt;-->
+        <!--        <field name="inherit_id" ref="hospital.view_hospital_patient_form"/>  &lt;!&ndash;  ref == External ID of inherited Model &ndash;&gt;-->
+        <!--        <field name="arch" type="xml">-->
+        <!--            <xpath expr="//field[@name='date_of_birth']" position="after">-->
+        <!--                <field name="selection" string="p name"/>-->
+        <!--            </xpath>-->
+        <!--        </field>-->
+        <!--    </record>-->
+
+
+        <record model="ir.ui.view" id="student_equipment_list">
+            <field name="name">student equipment Tree</field>
+            <field name="model">student.equipment</field> <!--  model name  should be same as DATABASE table name -->
+            <field name="arch" type="xml">
+                <tree>
+                    <!--                  <field name="sports_id"/>-->
+                    <field name="name"/>
+                    <field name="sport_type" string="Sport Type"/>
+                    <field name="eq_name"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record model="ir.ui.view" id="student_equipment_form_view">
+            <field name="name">student.equipment.form.view</field>
+            <field name="model">student.equipment</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sport_type" string="Sport Type"/>
+                            <!--                  <field name="sports_id"/>-->
+                            <field name="eq_name"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window"
+                id="student_equipment_action_window">  <!--  model="ir.actions.act_window" use for define action of view -->
+            <field name="name">Student Sport Window</field>
+            <field name="res_model">student.equipment</field> <!-- res_model name should be also same as DATABASE table name -->
+            <field name="view_mode">tree,form</field>
+        </record>
+
+
+<!--    """################  Function call from XML WITHOUT parameters : ################"""   -->
+
+        <!--      Function call from XML-->
+        <!--      Invoking function without parameters-->
+        <!--      We can use this method to call a function defined within any model without passing any parameters.-->
+
+        <!--    <function  model="school.student" name="_change_roll_no" />-->
+
+
+<!--    """################  Function call from XML WITH parameters : ################"""  -->
+
+        <!--      Function call from XML-->
+        <!--     Invoking function with parameters-->
+        <!--     The method's parameters are passed inside the value tag. -->
+        <!--     It is possible to pass as many parameters as you require. These parameters are accessible via the model's method. -->
+                                                                    <!-- eval = evaluate -->
+        <!--    <function  model="school.student" name="_change_roll_no" eval = "('WAL',)"/>-->
+                                    <!--or-->
+                    <function  model="school.student" name="_change_roll_no_with_para" >
+                    <value>WAL</value>
+                    </function>
+
+
+<!--    """################  MENU ITEMS : ################"""  -->
+
+        <!-- Top menu item -->
+
+        <menuitem name="School Student" id="school_student.menu_root"/>
+
+        <!-- menu categories -->
+
+
+        <menuitem name="Index" id="school_student.menu_1" parent="school_student.menu_root"/>
+        <menuitem name="Workshop" id="school_student.menu_2" parent="school_student.menu_root"/>
+
+        <!-- actions -->
+
+        <menuitem name="Student List" id="school_student.menu_1_list" parent="school_student.menu_1"
+                  action="school_student.action_window"/>
+
+
+        <!--      <menuitem name="Server to list" id="school_student" parent="school_student.menu_2"-->
+        <!--                action="school_student.action_server"/>-->
+
+        <menuitem name="Hobby" id="hobby_menu" parent="school_student.menu_2" action="hobby_action_window"/>
+        <!-- id can be any name, parent can be same as previous menuitem id , action should be same as related model action id -->
+        <menuitem name="Student Sport" id="student_equipment_menu" parent="school_student.menu_2"
+                  action="student_equipment_action_window"/>
+        <menuitem name="Server Action" id="server_code_action_window" parent="school_student.menu_2"
+                  action="server_code_action"/>
+
+    </data>
+
+</odoo>

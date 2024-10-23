@@ -1,0 +1,400 @@
+<odoo>
+    <data>
+
+        <!--        function call from xml-->
+        <function model="res.partner" name="_change_id_with_para">
+            <value> </value>
+        </function>
+
+
+
+        <!--        this is for Form View-->
+        <record id="view_partner_form_gym_management_form" model="ir.ui.view">
+            <field name="name">Gym Form</field>
+            <field name="model">res.partner</field>
+            <field name="priority">50</field>
+            <field name="arch" type="xml">
+
+                <form>
+
+<!--                <button name="con" string="a" type="object" ></button>-->
+
+                    <header invisible="company_type != 'person'">
+
+                <button name="action_state" string="Renew Membership" type="object" class="oe_highlight" />
+                <button name="action_is_consultation" string="In Consultant" modifiers="{'invisible': [('membership_states', '!=', 'pending')]}" type="object" ></button>
+                <button name="action_done" string="Mark as done" type="object"  invisible="membership_states != 'in_consultation'"></button>
+                <button name="action_cancel" string="Cancel" type="object" invisible="membership_states != 'in_consultation',membership_states != 'pending'" groups="gym_management.group_gym_trainer"></button>
+                <button name="action_draft" string="Reset To Draft" type="object" invisible="membership_states != 'expired'"></button>
+
+
+                        <field name="membership_states" widget="statusbar" nolabel="1" options="{'clickable': true}"
+                               statusbar_visible="pending,in_consultation,invoiced,expired" statubar_colors='{"done": "blue"}'>></field>
+
+
+                    </header>
+                    <sheet name="Gym Form">
+                        <div class="oe_button_box" name="button_box" invisible="company_type != 'person'">
+                            <button type="object" class="oe_stat_button" icon="fa-pencil-square-o"
+                                    name="action_view_partner_invoices" context="{'default_partner_id': id}">
+                                <div class="o_form_field o_stat_info">
+                                    <span class="o_stat_text">Invoices</span>
+                                </div>
+                            </button>
+                        </div>
+                        <field name="image_1920" widget="image" class="oe_avatar"
+                               options="{'preview_image': 'image_128'}"/>
+                        <group>
+                            <br/>
+
+                            <group>
+                                <field name="company_type" string="User Type"/>
+                                <field name="gymid"/>
+                                <field name="name"/>
+                                <field name="parent_id" string="Select Trainer" invisible="company_type != 'person'"
+                                       context="{'form_view_ref': 'gym_management.view_partner_form_gym_management_form'}"/>
+                                <field name="gender"/>
+                                <field name="bdate"/>
+                                <field name="phone"/>
+                                <field name="email"/>
+                                <field name="gym" string="Active User" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="age"/>
+                                <field name="weight"/>
+                                <field name="height"/>
+                                <field name="bmi"/>
+                                <field name="health_status"/>
+                                <!--                                <field name="gym"  />-->
+                                <field name="memberships_id" widget="many2many_tags"
+                                       invisible="company_type != 'person'"/>
+                                <field name="start_date" string="Joining Date" invisible="company_type != 'person'"/>
+                                <field name="invoiced_date" string="Invoiced Date"
+                                       invisible="company_type != 'person'"/>
+                                <field name="exp_date" readonly="1" invisible="company_type != 'person'"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Member's Details" name="contact_addresses" autofocus="autofocus"
+                                  invisible="company_type == 'person'">
+                                <field name="child_ids" mode="kanban">
+                                    <kanban class="o_kanban_mobile">
+                                        <templates>
+                                            <t t-name="kanban-box">
+                                                <div t-attf-class="oe_kanban_card oe_kanban_global_click" >
+                                                    <div class="o_kanban_record_top">
+                                                        <div class="o_kanban_record_headings">
+                                                            <strong class="o_kanban_record_title">
+                                                                <span>
+                                                                    <h3>
+                                                                        <field name="gymid" />
+                                                                    </h3>
+                                                                </span>
+                                                            </strong>
+                                                            <br/>
+                                                            <span>
+                                                                <div class="o_kanban_record_body">
+                                                                    <h3>
+                                                                        <field name="name"/>
+                                                                    </h3>
+                                                                    <field name="memberships_id"/>
+                                                                    <span>Member</span>
+                                                                </div>
+                                                            </span>
+                                                            <br/>
+                                                        </div>
+
+                                                        <span>
+                                                            <field name="image_1920" widget="image" class="oe_avatar"
+                                                                   options="{'preview_image': 'image_128'}"
+                                                                   field_id="image_1920_0"/>
+                                                        </span>
+                                                    </div>
+
+                                                </div>
+                                            </t>
+                                        </templates>
+                                    </kanban>
+                                    <form string="Member's Details" >
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="company_type" string="User Type" type="radio"/>
+                                                    <field name="gymid"/>
+                                                    <field name="name"/>
+                                                    <field name="parent_id" string="Select Trainer"
+                                                           invisible="company_type != 'person'"/>
+                                                    <!--                                                    domain="[('gym', '=',True)]"-->
+                                                    <field name="gender"/>
+                                                    <field name="bdate"/>
+                                                    <field name="age"/>
+                                                    <field name="phone"/>
+                                                    <field name="gym" default="1" invisible="True"/>
+                                                </group>
+                                                <group>
+                                                    <field name="email"/>
+                                                    <field name="memberships_id" invisible="company_type != 'person'"/>
+                                                    <field name="start_date" string="Joining Date"/>
+                                                    <field name="exp_date" readonly="1"
+                                                           invisible="company_type != 'person'"/>
+                                                </group>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
+                            </page>
+                            <page string="Workout Plan" name="workout_plan" invisible="company_type != 'person'">
+                                <field name="member_workout_ids">
+                                    <tree string="Workout Plans" editable="bottom">
+                                        <field name="workout_id"
+                                               context="{'form_view_ref': 'gym_management.workout_plan_form_view'}"/>
+                                        <!--we use here many2nay tags for use days in this -->
+                                        <field name="workout_days" widget="many2many_tags" string="Workout Days"/>
+                                        <field name="from_date"/>
+                                        <field name="to_date"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Diet Plan" name="diet_plan" invisible="company_type != 'person'">
+                                <field name="member_diet_ids">
+                                    <tree string="Diet Plans" editable="bottom">
+                                        <field name="diet_ids"
+                                               context="{'form_view_ref': 'gym_management.diet_plan_form_view'}"/>
+                                        <field name="from_date"/>
+                                        <field name="to_date"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Attendance">
+                                <field name="attendance_ids">
+                                    <tree>
+                                        <field name="check_in"/>
+                                        <field name="check_out"/>
+                                        <field name="worked_hours"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="check_in"/>
+                                            <field name="check_out"/>
+                                            <field name="worked_hours"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                            <page string="Membership" name="membership" invisible="company_type != 'person'">
+                                <group>
+                                    <group>
+                                        <field name="membership_states" class="oe_inline mb-0" on_change="1"/>
+
+                                        <field name="parent_id" on_change="1" can_create="True" can_write="True"
+                                               string="Associate Member"
+                                               context="{'form_view_ref': 'gym_management.view_partner_form_gym_management_form'}"/>
+                                    </group>
+                                    <group>
+                                        <div class="d-flex align-items-center justify-content-start gap-3">
+                                            <button name="action_membership_invoice_view" type="object"
+                                                    string="Buy Membership" class="oe_link"/>
+                                            <button name="action_membership_invoice_wizard" type="object"
+                                                    string="Manage Membership" class="oe_link"
+                                                    groups="gym_management.group_gym_trainer"/>
+                                        </div>
+                                    </group>
+                                </group>
+                                <br/>
+
+                                <field name="member_lines" nolabel="1" colspan="4" readonly="1">
+                                    <tree string="Memberships"  >
+                                        <field name="date" string="Invoiced Date" />
+                                        <field name="membership_id" context="{'form_view_ref': 'gym_management.view_gym_membership'}"/>
+                                        <field name="member_price"/>
+                                        <field name="account_invoice_id" on_change="1" />
+                                        <field name="state"/>
+
+                                    </tree>
+                                    <form string="Memberships">
+                                        <group col="2">
+                                            <group>
+                                                <field name="membership_id" context="{'form_view_ref': 'gym_management.view_gym_membership'}"/>
+                                                <field name="date" string="Invoiced Date" />
+                                                <field name="state"/>
+                                            </group>
+                                            <group>
+                                                <field name="member_price"/>
+                                                <field name="account_invoice_id"
+                                                       context="{'form_view_ref': 'account.view_move_form'}"
+                                                       on_change="1"/>
+                                            </group>
+                                        </group>
+                                    </form>
+                                </field>
+
+                            </page>
+
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+
+        <!--        this is for tree View-->
+        <record id="view_partner_form_gym_management_tree" model="ir.ui.view">
+            <field name="name">>Gym Tree</field>
+            <field name="model">res.partner</field>
+            <field name="arch" type="xml">
+                <tree string="Gym Tree">
+                    <field name="gymid"/>
+                    <field name="name"/>
+                    <field name="age"/>
+                    <field name="gender"/>
+                    <field name="bdate"/>
+                    <field name="memberships_id" optional="hide"/>
+                    <field name="company_type" string="User Type" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+
+
+
+        <!--        this is for kanban View-->
+        <record id="view_partner_form_gym_management_kanban" model="ir.ui.view">
+            <field name="name">Gym Kanban</field>
+            <field name="model">res.partner</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <span>
+                                                <h3>
+                                                    <field name="gymid"/>
+                                                </h3>
+                                            </span>
+                                        </strong>
+                                        <br/>
+                                        <span>
+                                            <div class="o_kanban_record_body">
+                                                <h3>
+                                                    <field name="name"/>
+                                                </h3>
+                                            </div>
+<div>
+                                                <field name="age"/>,
+                                                <field name="gender"/><br/>
+                                                <field  name="company_type" invisible="company_type == 'person'"/></div>
+                                                <br/>
+                                             <field name="memberships_id"  invisible="company_type != 'person'"/>
+                                        </span>
+                                    </div>
+                                    <span>
+                                        <field name="image_1920" widget="image" alt="Product" options="{'size': [0, 128]}"/>
+                                    </span>
+                                </div>
+
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+
+        <!--        this is for search View-->
+        <record id="view_partner_form_gym_management_search" model="ir.ui.view">
+            <field name="name">res.partner.form.gym.management.search</field>
+            <field name="model">res.partner</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"
+                           filter_domain="['|','|'('name', 'ilike', self), ('age', 'ilike', self), ('gender', 'ilike', self), ('memberships_id', 'ilike', self),]"
+                           string="Name"/>
+                    <field name="bdate"/>
+                    <field name="age"/>
+                    <field name="gymid"/>
+                    <field name="gender"/>
+                    <filter name="filter_male" domain="[('gender', '=', 'male')]" string="Male"/>
+                    <filter name="filter_female" domain="[('gender', '=', 'female')]" string="Female"/>
+                    <separator></separator>
+
+                    <filter name="filter_trainer" domain="[('is_company', '=', True)]" string="Trainer"/>
+                    <filter name="filter_member" domain="[('is_company', '=', False)]" string="Member"/>
+
+                    <separator></separator>
+
+                    <group expand="0" string="Group by">
+
+                        <filter string="Gender" name="group_by_gender" context="{'group_by': 'gender'}"/>
+                        <separator></separator>
+                        <filter string="State Type" name="membership_states" context="{'group_by': 'membership_states'}"/>
+                        <filter string="User Type" name="company_type" context="{'group_by': 'company_type'}"/>
+                    </group>
+
+                    <searchpanel>
+                        <separator></separator>
+                        <field name="gender" icon="fa fa-users" select="multi" enable_counters="1"/>
+                    </searchpanel>
+                </search>
+            </field>
+        </record>
+
+
+         <!--        this is for main Action Window-->
+        <record model="ir.actions.act_window" id="action_window">
+            <field name="name">Gym Management Window</field>
+            <field name="res_model">res.partner</field>
+
+            <field name="view_ids"
+                   eval="[(5, 0, 0),
+                          (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_partner_form_gym_management_kanban')}),
+                          (0, 0, {'view_mode': 'form', 'view_id': ref('view_partner_form_gym_management_form')}),
+                          (0, 0, {'view_mode': 'tree', 'view_id': ref('view_partner_form_gym_management_tree')}),
+                         ]"/>
+
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="domain">[('gym','=',True)]</field>
+            <field name="context">{'gym':True}</field>
+            <field name="context">{'gym':True,"search_default_company_type": 1}</field>
+
+
+            <field name="search_view_id" ref="view_partner_form_gym_management_search"/>
+
+        </record>
+
+        <record id="action_partner_form_gym_management_member" model="ir.actions.act_window">
+            <field name="name">Gym Members</field>
+            <field name="res_model">res.partner</field>
+            <field name="domain">[('gym','=',True),('company_type','=','person')]</field>
+            <field name="context">{'gym':True,"search_default_membership_states": 1}
+        </field>
+            <field name="view_ids"
+                   eval="[(5, 0, 0),
+                          (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_partner_form_gym_management_kanban')}),
+                          (0, 0, {'view_mode': 'form', 'view_id': ref('view_partner_form_gym_management_form')}),
+                          (0, 0, {'view_mode': 'tree', 'view_id': ref('view_partner_form_gym_management_tree')}),
+                         ]"/>
+            <field name="search_view_id" ref="view_partner_form_gym_management_search"/>
+
+        </record>
+
+        <record id="action_partner_form_gym_management_trainer" model="ir.actions.act_window">
+            <field name="name">Gym Trainers</field>
+            <field name="res_model">res.partner</field>
+            <field name="domain">[('gym','=',True),('company_type','=','company')]</field>
+            <field name="context">{'gym':True}</field>
+            <field name="view_ids"
+                   eval="[(5, 0, 0),
+                          (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_partner_form_gym_management_kanban')}),
+                          (0, 0, {'view_mode': 'form', 'view_id': ref('view_partner_form_gym_management_form')}),
+                          (0, 0, {'view_mode': 'tree', 'view_id': ref('view_partner_form_gym_management_tree')}),
+                         ]"/>
+            <field name="search_view_id" ref="view_partner_form_gym_management_search"/>
+        </record>
+
+    </data>
+</odoo>

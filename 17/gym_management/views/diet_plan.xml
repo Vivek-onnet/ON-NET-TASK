@@ -1,0 +1,114 @@
+<odoo>
+
+
+    <!--   Form view for Diet plan -->
+    <record id="diet_plan_form_view" model="ir.ui.view">
+        <field name="name">diet.plan.form.view</field>
+        <field name="model">gym_management.diet_plan</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <h1>
+                        <field name="name" string="Name"/>
+                    </h1>
+                    <field name="description"/>
+
+                    <br/>
+                    <br/>
+                    <notebook>
+                        <page string="Diet" id="page1">
+                            <field name="diet_plan_id">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="quantity"/>
+                                    <field name="time"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="name"/>
+                                            <field name="quantity"/>
+                                        </group>
+                                        <group>
+                                            <field name="time"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!--   Kanban view for Diet plan -->
+    <record id="diet_plan_kanban_view" model="ir.ui.view">
+        <field name="name">diet.plan.kanban.view</field>
+        <field name="model">gym_management.diet_plan</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <h3>
+                    <field name="name" string="Exercise"/>
+                </h3>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title">
+                                        <span>
+                                            <h3>
+                                                <field name="name"/>
+                                            </h3>
+                                        </span>
+                                    </strong>
+                                    <br/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+
+    <!--    tree view for diet plan -->
+    <record id="diet_plan_tree_view" model="ir.ui.view">
+        <field name="name">diet.plan.tree.view</field>
+        <field name="model">gym_management.diet_plan</field>  <!-- model name  should be same as DATABASE table name -->
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <!--   Search view for Diet plan -->
+    <record id="diet_plan_search_view" model="ir.ui.view">
+        <field name="name">diet.plan.search.view</field>
+        <field name="model">gym_management.diet_plan</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Diet Plan Name"/>
+            </search>
+        </field>
+    </record>
+
+
+    <!-- actions opening views on models -->
+    <record id="action_diet_plan_window" model="ir.actions.act_window">
+        <field name="name">Diet Plan</field>
+        <field name="res_model">gym_management.diet_plan</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+
+
+
+
+</odoo>

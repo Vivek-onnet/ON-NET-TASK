@@ -1,0 +1,145 @@
+<!--<odoo>-->
+
+<!--&lt;!&ndash;     <template id="school_student_profile_report_template">&ndash;&gt;-->
+<!--&lt;!&ndash;        <t t-call="web.html_container" t-lang="en_US">&ndash;&gt;-->
+<!--&lt;!&ndash;            <t t-foreach="docs" t-as="doc">&ndash;&gt;-->
+<!--&lt;!&ndash;                <t t-call="web.external_layout">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <div class="page">&ndash;&gt;-->
+
+<!--&lt;!&ndash;                        &lt;!&ndash; t-field , t-esc , t-out use to access also field value which defined in this template &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        <h1>Hello How are you ?</h1>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        <h1 t-field="doc.name"/> &lt;!&ndash; t-field="doc.name" use to access field value &ndash;&gt;&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        <h1 t-esc="doc.name"/>&ndash;&gt;&ndash;&gt;-->
+
+<!--&lt;!&ndash;                            &lt;!&ndash;  create variable and use it in template &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        <h1 t-set = "a" t-value="12551212"/>  t-field="doc.name" use to access field value &ndash;&gt;&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        <h1 t-out="a"/>  t-out // t-esc use to access also field value which defined in this template &ndash;&gt;&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                            <h1 t-set = "a" t-value="doc.name"/>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                            <h1 t-out="a"/>&ndash;&gt;&ndash;&gt;-->
+
+
+
+<!--&lt;!&ndash;                        &lt;!&ndash;`if else condition &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        <t t-if="doc.gender == 'male'">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                            <h1>Hello Mr. <span t-field="doc.name"/></h1>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        </t>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        <t t-else="">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                            <h1>Hello Ms. <span t-field="doc.name"/></h1>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        </t>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                        &lt;!&ndash;for loop&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        <t t-foreach="[1,2,3,4,5]" t-as="i">&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                            <h1>Hello <span t-field="doc.name"/></h1>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                        </t>&ndash;&gt;&ndash;&gt;-->
+
+<!--&lt;!&ndash;                    </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                </t>&ndash;&gt;-->
+<!--&lt;!&ndash;            </t>&ndash;&gt;-->
+<!--&lt;!&ndash;        </t>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    </template>&ndash;&gt;-->
+
+<!--    <template id="school_student_profile_report_template">-->
+<!--        <t t-call="web.html_container" t-lang="en_US">-->
+<!--            <t t-foreach="docs" t-as="doc">-->
+<!--                <t t-call="school_student.sub_template"/>-->
+<!--            </t>-->
+<!--        </t>-->
+<!--    </template>-->
+
+
+<!--    <template id="sub_template">-->
+<!--        <t t-call="web.html_container" t-lang="en_US">-->
+
+<!--&lt;!&ndash;  The t-att tag  &ndash;&gt;-->
+<!--&lt;!&ndash; The t-att tag is used in Odoo QWeb templates to dynamically set HTML attributes such as class, style, href, src, etc.&ndash;&gt;-->
+<!--&lt;!&ndash;                   <div t-att="['style','background-color:red']" class="page">&ndash;&gt;-->
+<!--                        <p t-att-href="doc.school_id.name">hii</p>-->
+
+<!--&lt;!&ndash;  The t-attf tag  &ndash;&gt;-->
+<!--&lt;!&ndash; The t-attf tag is designed to dynamically set HTML attributes using Python-style string formatting.&ndash;&gt;-->
+<!--&lt;!&ndash;It allows you to inject multiple dynamic values into an HTML attribute in a clean and readable way, making the template easier to manage when complex formatting is needed. &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;            <p t-attf-style="background-color:#{doc.roll_no}">doc.roll_no</p>&ndash;&gt;-->
+<!--<p t-attf-style="background-color:{{doc.roll_no if doc.roll_no else 'red'}}">doc.roll_no</p>-->
+<!--                    <div class="page">-->
+<!--                        <p>it is in sub template</p>-->
+<!--                        <t t-call="school_student.school_student_profile_variable_report_template"/>-->
+<!--                        <t t-call="school_student.school_student_profile_condition_report_template"/>-->
+<!--                        <t t-call="school_student.school_student_profile_loop_report_template"/>-->
+<!--                    </div>-->
+<!--                </t>-->
+<!--    </template>-->
+
+<!--    <template id="school_student_profile_variable_report_template">-->
+<!--        &lt;!&ndash;          create variable and use it in template &ndash;&gt;-->
+<!--        <t>-->
+<!--                <h1 t-set="a" t-value="12551212"/>-->
+<!--                <h1 t-out="a"/>-->
+<!--                <h1 t-set="a" t-value="doc.name"/>-->
+<!--                <h1 t-out="a"/>-->
+<!--        </t>-->
+<!--    </template>-->
+
+<!--    <template id="school_student_profile_condition_report_template">-->
+<!--                <t t-if="doc.gender == 'male'">-->
+<!--                    <h1>Hello Mr.-->
+<!--                        <span t-field="doc.name"/>-->
+<!--                    </h1>-->
+<!--                </t>-->
+<!--                <t t-else="">-->
+<!--                    <h1>Hello Ms.-->
+<!--                        <span t-field="doc.name"/>-->
+<!--                    </h1>-->
+<!--                </t>-->
+
+<!--    </template>-->
+
+<!--    <template id="school_student_profile_loop_report_template">-->
+<!--                <t t-foreach="[1,2,3,4,5]" t-as="i">-->
+<!--                    <h1>Hello-->
+<!--                        <span t-field="doc.name"/>-->
+<!--                    </h1>-->
+<!--                </t>-->
+<!--    </template>-->
+
+
+<!--    &lt;!&ndash;    """################  PAPER FORMAT : ################"""  &ndash;&gt;-->
+<!--    &lt;!&ndash;    Paper formate : paper format is used to define how and which type of report should be printed. &ndash;&gt;-->
+
+<!--     <record id="student_custom_report_paperformat" model="report.paperformat">-->
+<!--            <field name="name">Student Report Paper Format</field>-->
+<!--            <field name="format">A4</field>-->
+<!--            <field name="default" eval="False" />-->
+<!--            <field name="orientation">Landscape</field>-->
+<!--            <field name="margin_top">45</field>-->
+<!--            <field name="margin_bottom">40</field>-->
+<!--            <field name="margin_left">20</field>-->
+<!--            <field name="margin_right">10</field>-->
+<!--            <field name="dpi">70</field>-->
+<!--            <field name="header_line" eval="False" />-->
+<!--            <field name="header_spacing">45</field>-->
+<!--        </record>-->
+
+
+
+<!--    &lt;!&ndash;    """################  REPORT ACTIONS : ################"""  &ndash;&gt;-->
+<!--    &lt;!&ndash;    **Report Actions** are used to define how and where a report should be generated and made available for printing or downloading.&ndash;&gt;-->
+<!--    &lt;!&ndash;    Key Fields:&ndash;&gt;-->
+<!--    &lt;!&ndash;name: Used as the file name if print_report_name isn’t specified.&ndash;&gt;-->
+<!--    &lt;!&ndash;model: The model the report is about.&ndash;&gt;-->
+<!--    &lt;!&ndash;report_type: qweb-pdf (default) for PDF or qweb-html for HTML reports.&ndash;&gt;-->
+<!--    &lt;!&ndash;report_name: The external ID of the QWeb template used.&ndash;&gt;-->
+<!--    &lt;!&ndash;print_report_name: Python expression defining the report name.&ndash;&gt;-->
+
+<!--    <record model="ir.actions.report" id="school_student_profile_report_temp">-->
+<!--        <field name="name">Student Card</field>-->
+<!--        <field name="model">school.student</field>-->
+<!--        <field name="report_type">qweb-pdf</field>-->
+<!--        <field name="report_name">school_student.school_student_profile_report_template</field>-->
+<!--        <field name="report_file">school_student.school_student_profile_report_template</field>-->
+<!--        <field name="print_report_name">'Student-Report'</field>-->
+<!--        <field name="binding_model_id" ref="model_school_student"/> &lt;!&ndash; binding model id use for define on which model the action should be triggered  &ndash;&gt;-->
+<!--        <field name="binding_type">report</field>  &lt;!&ndash; binding_view_types use for define on which type of page of the model the action should be triggered  &ndash;&gt;-->
+<!--        <field name="paperformat_id" ref="school_student.student_custom_report_paperformat"/>-->
+<!--    </record>-->
+<!--</odoo>-->
+

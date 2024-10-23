@@ -1,0 +1,10 @@
+<odoo>
+    <data noupdate="1">
+        <record model="school.student" id="noupdate_student_1">
+            <field name="name">Jethalal</field>
+            <field name="total_fees">369</field>
+            <field name="school_id" ref="school.school_2"/>
+            <field name="bdate">2000-01-01</field>
+        </record>
+    </data>
+</odoo>

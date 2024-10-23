@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_school_student_school_student,school.student,model_school_student,base.group_user,1,1,1,1
+school_student.access_hobby,access_hobby,school_student.model_hobby,base.group_user,1,1,1,1
+school_student.access_student_fees_update_wizard,access_student_fees_update_wizard,school_student.model_student_fees_update_wizard,base.group_user,1,1,1,1
+school_student.access_sports,access_sports,school_student.model_sports,base.group_user,1,1,1,1
+school_student.access_student_equipment,access_student_equipment,school_student.model_student_equipment,base.group_user,1,1,1,1

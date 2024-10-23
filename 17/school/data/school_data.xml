@@ -1,0 +1,27 @@
+<odoo>
+        <record model="school.profile" id="school_2">
+            <field name="name">R.K School</field>
+            <field name="email">abc@gmail.com</field>
+            <field name="phone">78451245</field>
+            <field name="school_type">public</field>
+        </record>
+
+    <record model="school.profile" id="school_3">
+            <field name="name">P.K School</field>
+            <field name="email">abc@gmail.com</field>
+            <field name="phone">78451245</field>
+            <field name="school_type">public</field>
+        </record>
+    <record model="school.profile" id="school_4">
+            <field name="name">J.K School</field>
+            <field name="email">abc@gmail.com</field>
+            <field name="phone">78451245</field>
+            <field name="school_type">public</field>
+        </record>
+    <record model="school.profile" id="school_6">
+            <field name="name">O.K School</field>
+            <field name="email">abc@gmail.com</field>
+            <field name="phone">78451245</field>
+            <field name="school_type">public</field>
+        </record>
+</odoo>

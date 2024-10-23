@@ -1,0 +1,37 @@
+<odoo>
+    <data>
+
+        <!-- Creating sample memberships -->
+        <record id="membership_gold" model="product.template">
+            <field name="name">GOLD</field>
+            <field name="duration_months">12</field>
+            <field name="membership" eval="True"/>
+            <field name="personal_trainer" eval="False"/>
+            <field name="types">membership</field>
+            <field name="list_price">10000.00</field>
+            <field name="image_1920" type="base64" file="gym_management/static/src/img/gold.png"/>
+        </record>
+
+        <record id="membership_silver" model="product.template">
+            <field name="name">SILVER</field>
+            <field name="duration_months">6</field>
+            <field name="membership" eval="True"/>
+            <field name="personal_trainer" eval="False"/>
+            <field name="types">membership</field>
+            <field name="list_price">6000.00</field>
+            <field name="image_1920" type="base64" file="gym_management/static/src/img/silver.png"/>
+
+        </record>
+
+        <record id="membership_bronze" model="product.template">
+            <field name="name">BRONZE</field>
+            <field name="duration_months">3</field>
+            <field name="membership" eval="True"/>
+            <field name="personal_trainer" eval="False"/>
+            <field name="types">membership</field>
+            <field name="list_price">4000.00</field>
+             <field name="image_1920" type="base64" file="gym_management/static/src/img/Bronze.png"/>
+        </record>
+
+</data>
+</odoo>
