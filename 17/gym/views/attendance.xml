@@ -1,0 +1,108 @@
+<odoo>
+    <data>
+
+        <record id="attendance_form_view" model="ir.ui.view">
+            <field name="name">attendance.form.view</field>
+            <field name="model">hr.attendance</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form>
+
+
+                    <sheet>
+                        <h1>
+<!--                            <field name="name" string="Name" widget="many2one_avatar_user"/>-->
+
+                        </h1>
+                        <group colspan="2">
+                            <group col="1">
+                                <field name="employee_id" required="0" invisible="1"/>
+                                <field name="check_in" on_change="1"/>
+                                <field name="check_out" on_change="1"/>
+                            </group>
+                            <group col="2">
+                                <field name="worked_hours" string="Total WorkOut Hours" widget="float_time"
+                                       on_change="1"/>
+<!--                                <button name="con" string="Undefined" type="object" icon="fa-refresh text-primary"/>-->
+
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="attendance_tree_view" model="ir.ui.view">
+            <field name="name">attendance.tree.view</field>
+            <field name="model">hr.attendance</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="check_in" on_change="1"/>
+                    <field name="check_out" on_change="1"/>
+                    <field name="worked_hours" string="Total WorkOut Hours" widget="float_time" on_change="1"/>
+                </tree>
+            </field>
+        </record>
+
+
+
+        <record id="attendance_search_view" model="ir.ui.view">
+            <field name="name">attendance.search.view</field>
+            <field name="model">hr.attendance</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name" string="Name"/>
+                     <filter string='User' name="members" domain="[]"
+                                context="{'group_by' : 'name'}"/>
+                </search>
+            </field>
+        </record>
+        <!-- actions opening views on models -->
+
+
+        <record model="ir.actions.act_window" id="attendance_action_window">
+            <field name="name">Gym Attendance Window</field>
+            <field name="res_model">hr.attendance</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="attendance_search_view"/>
+             <field name="context">
+            {"search_default_members": 1}
+        </field>
+        </record>
+
+        <record id="member_attendance_action_window" model="ir.actions.act_window">
+            <field name="name">Gym Members Attendance</field>
+            <field name="res_model">hr.attendance</field>
+            <field name="domain">[('gym','=',True),('name.company_type','=','person')]</field>
+              <field name="context">{
+                'gym':True,
+                 "search_default_members": 1
+                }</field>
+            <field name="view_ids"
+                   eval="[(5, 0, 0),
+                          (0, 0, {'view_mode': 'tree', 'view_id': ref('attendance_tree_view')}),
+                          (0, 0, {'view_mode': 'form', 'view_id': ref('attendance_form_view')}),
+                         ]"/>
+        </record>
+
+        <record id="trainer_attendance_action_window" model="ir.actions.act_window">
+            <field name="name">Gym Trainers Attendance</field>
+            <field name="res_model">hr.attendance</field>
+            <field name="domain">[('gym','=',True),('name.company_type','=','company')]</field>
+            <field name="context">{
+                'gym':True,
+                 "search_default_members": 1
+                }</field>
+            <field name="view_ids"
+                   eval="[(5, 0, 0),
+                          (0, 0, {'view_mode': 'tree', 'view_id': ref('attendance_tree_view')}),
+                          (0, 0, {'view_mode': 'form', 'view_id': ref('attendance_form_view')}),
+                         ]"/>
+        </record>
+
+    </data>
+</odoo>

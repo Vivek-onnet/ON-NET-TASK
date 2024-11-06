@@ -1,0 +1,62 @@
+<odoo>
+
+    <!-- Root-menu item -->
+
+    <menuitem name="Gym" id="gym_root_menu" sequence="-100" action="action_window"/>
+
+    <!-- Profiles menu categories -->
+    <menuitem id="gym_sub_menu" name="Profiles" parent="gym_root_menu"/>
+
+        <!-- Profile'sSub-menu item -->
+    <menuitem id="gym_member_menu" name="Gym Members" parent="gym_sub_menu"
+              action="gym_management_member"/>
+
+    <menuitem id="gym_trainer_menu" name="Trainers" parent="gym_sub_menu"
+              action="gym_management_trainer"/>
+
+<!--    &lt;!&ndash; Membership menu categories &ndash;&gt;-->
+
+<!--    <menuitem id="membership" name="Membership" parent="gym_root_menu" action="gym_membership_action_window"/>-->
+
+    <!-- Workouts menu categories -->
+
+    <menuitem id="gym_workout" name="Gym Workout" parent="gym_root_menu"/>
+
+         workout's Sub-menu item
+    <menuitem id="Exercise" name="Exercise" parent="gym_workout" action="action_exercise_windows"/>
+
+    <menuitem id="Gym_Workout_Plan" name="Workout Plan" parent="gym_workout" action="action_workout_plan_windows"/>
+
+
+
+       <!-- Diet menu categories -->
+
+    <menuitem id="gym_diet" name="Diet" parent="gym_root_menu" />
+
+    <menuitem id="Diet_Plan" name="Diet Plan" parent="gym_diet" action="action_diet_plan_windows"/>
+
+<!--    <menuitem id="Diet" name="Diet" parent="gym_diet" action="action_diet_window"/>-->
+
+
+    <!-- Attendence menu categories -->
+
+    <menuitem id="gym_attendance" name="Attendence" parent="gym_root_menu" action="attendance_action_window"/>
+
+     <menuitem id="gym_member_attendance_menu" name="Members Attendance" parent="gym_attendance"
+              action="member_attendance_action_window" />
+
+    <menuitem id="gym_trainer_attendance_menu" name="Trainers Attendance" parent="gym_attendance"
+              action="trainer_attendance_action_window" />
+
+     <!-- Invoices menu categories -->
+    <menuitem id="Invoice" name="Invoices" sequence="100" parent="gym_root_menu" />
+
+    <!--Memebers Invoices Sub-menu item-->
+    <menuitem id="Members_Invoice" name="Members Invoice" parent="Invoice" action="action_gym_invoices_window"/>
+
+    <menuitem id="Members_Credit_Notes" name="Members Credit Notes" parent="Invoice" action="action_gym_move_out_refund_type"/>
+
+
+
+
+</odoo>

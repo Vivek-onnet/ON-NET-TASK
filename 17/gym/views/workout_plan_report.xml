@@ -1,0 +1,77 @@
+<odoo>
+    <data>
+        <template id="workout_plan_pdf_report">
+            <t t-call="web.external_layout">
+                <t t-foreach="docs" t-as="doc">
+                    <div class="page">
+                        <main> <!-- Add the <main> tag here -->
+
+                            <h1 class="text-center">Workout Plan Report</h1><br/>
+                            <h2><t t-esc="doc.name"/></h2>
+                            <p>This Workout is a simple weekly routine focusing on major body
+                                parts using minimal equipment.
+                            </p><br/>
+<!--                            <h2>Description</h2>-->
+                            <p>
+                                <span>
+                                    <t t-esc="doc.description"/>
+                                </span>
+                            </p>
+                            <p><strong>Days : </strong><t t-foreach="doc.w_days_id" t-as="day">
+                                <span>
+                                    <t t-esc="day.name"/>
+                                </span>
+                            </t></p><br/>
+                             <td align="center" style="min-width: 590px;">
+                            <table class="table table-sm table-hover" align="center" >
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Body Part</th>
+                                        <th>Equipment</th>
+                                        <th>Sets</th>
+                                        <th>Repeats</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.workout_days_id" t-as="exercise">
+                                        <tr>
+                                            <td>
+                                                <t t-esc="exercise.name"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="exercise.body_part"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="exercise.equipment"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="exercise.sets"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="exercise.repeat"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                             </td>
+                        </main>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+
+        <record model="ir.actions.report" id="workout_plan_pdf_reports_action">
+            <field name="name">Workout Plan Report</field>
+            <field name="model">workout_plan</field> <!-- Correct model reference here -->
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">workout_plan_pdf_report</field>
+            <field name="report_file">workout_plan_pdf_report</field>
+            <field name="print_report_name">'Workout-Plan-Report'</field>
+            <field name="binding_model_id" ref="model_workout_plan"/> <!-- Correct model binding here -->
+            <field name="binding_type">report</field>
+        </record>
+    </data>
+</odoo>
