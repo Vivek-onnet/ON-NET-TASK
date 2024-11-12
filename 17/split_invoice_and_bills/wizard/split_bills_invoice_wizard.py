@@ -18,22 +18,7 @@ class SplitInvoiceWizard(models.TransientModel):
     available_product_ids = fields.Many2many('product.product', string="Available Products",compute='_compute_available_product_ids', store=True)
     product_qty = fields.Float(string='Product Quantity', compute='_compute_product_qty', store=True)
 
-    allow_customers_domain = fields.Char(
-        string="allow customers domain",
-        compute="_compute_allow_customers_domain",
-        help="Dynamic domain used for the tag that can be set on product_id",
-        store=True
-    )
 
-    @api.depends('invoice_id')
-    def _compute_allow_customers_domain(self):
-        for rec in self:
-            partner_ids = []
-            followers = self.env['res.partner'].search(
-                [('id', '!=', self.invoice_id.partner_id.id), ('company_type', '=', 'person')], order='id')
-            for line in followers:
-                partner_ids.append(line.id)
-            rec.allow_customers_domain = str([("id", "in", partner_ids)])
 
     @api.model
     def default_get(self, fields):
@@ -51,13 +36,6 @@ class SplitInvoiceWizard(models.TransientModel):
         result.update({'line_ids': lines, 'invoice_id': invoice.id})
         return result
 
-    @api.onchange('invoice_id')
-    def _onchange_invoice_id(self):
-        if self.invoice_id:
-            self.customer_ids = False
-            available_customers = self.invoice_id.mapped('partner_id')
-            print("available_customers::",available_customers.ids)
-            return {'domain': {'customer_ids': [('id', 'in', available_customers.ids)]}}
 
     @api.constrains('give_percentage')
     def _check_give_percentage(self):
@@ -65,6 +43,10 @@ class SplitInvoiceWizard(models.TransientModel):
         for record in self:
             if not (0 < record.give_percentage < 100):
                 raise ValidationError(_("The Give Percentage must be between 0 and 100."))
+    @api.onchange('customers_id', 'split_selection')
+    def _onchange_customer_ids_id(self):
+        if self.split_selection == 'whole_bill':
+            self.customer_ids = self.customers_id
 
     @api.depends('invoice_id', "line_ids.product_id")
     def _compute_available_product_ids(self):
@@ -84,39 +66,37 @@ class SplitInvoiceWizard(models.TransientModel):
                 record.product_qty = all_product_qty
 
 
-    @api.onchange('give_percentage', 'product_qty')
-    def _compute_ratio_display(self):
+    @api.onchange('give_percentage','customers_id','customers_id','product_qty')
+    def _onchange_ratio_display(self):
         """Compute the ratio for splitting the invoice based on the given percentage and product quantity."""
-        # Check if any line has zero quantity for unit-based products
-        user_ids = self.customer_ids
-        for user in user_ids:
-            print(user)
-            user_lines = self.line_ids.filtered(lambda l: l.user_id == user)
-            for line in user_lines:
-                if line.quantity <= 0 and line.product_id.uom_id.category_id.name == "Unit":
-                    raise ValidationError(_("Cannot create an invoice with Quantity = 0 for unit-based products."))
         for record in self:
+            print("record",record,self)
             if record.give_percentage <= 0:
                 continue
             if all(line.product_id.uom_id.category_id.name == "Unit" for line in self.invoice_id.invoice_line_ids):
-                if record.product_qty > 0:
-                    ratio = record.give_percentage / 100
-                    total_parts = math.ceil(record.product_qty * ratio)
-                    record.percentage = round((total_parts / record.product_qty) * 100)
-                    second_party_percentage = 100 - record.percentage
-                    record.ratio_display = f"{record.percentage}:{second_party_percentage}"
+                self._count_ratio_unit(record)
             else:
                 record.percentage = record.give_percentage
                 second_party_percentage = 100 - record.percentage
                 record.ratio_display = f"{record.percentage}:{second_party_percentage}"
 
+    def _count_ratio_unit(self,record):
+        for line in self.invoice_id.invoice_line_ids:
+            if line.quantity > 1 and record.product_qty > 1 and record.give_percentage > 0:
+                ratio = record.give_percentage / 100
+                total_parts = math.ceil(record.product_qty * ratio)
+                record.percentage = round((total_parts / record.product_qty) * 100)
+                second_party_percentage = 100 - record.percentage
+                record.ratio_display = f"{record.percentage}:{second_party_percentage}"
+
     @api.onchange('line_ids')
-    def _onchange_selected(self):
+    def _onchange_update_selected(self):
+        """
+        Updates the 'selected' field of line items based on the 'quantity'.
+        If the quantiti is zero, 'selected' is set to False; otherwise, it is set to True.
+        """
         for line in self.line_ids:
-            if line.quantity == 0:
-                line.selected = False
-            else:
-                line.selected = True
+            line.selected = line.quantity > 0
 
     @api.constrains('line_ids')
     def _check_quantities(self):
@@ -126,6 +106,9 @@ class SplitInvoiceWizard(models.TransientModel):
         product_quantity_map = {}
         for line in self.line_ids:
             product_quantity_map[line.product_id] = product_quantity_map.get(line.product_id, 0) + line.quantity
+            self._quantity_constrains(product_quantity_map)
+
+    def _quantity_constrains(self,product_quantity_map):
         for product, total_quantity in product_quantity_map.items():
             original_line = self.invoice_id.invoice_line_ids.filtered(lambda l: l.product_id == product)
             if original_line:
@@ -153,30 +136,40 @@ class SplitInvoiceWizard(models.TransientModel):
             return
         total_users = len(self.customer_ids) + 1
         lines = []
-        if self.split_selection == 'product_wise':
-            for line in self.invoice_id.invoice_line_ids:
-                quantity_per_user = int(line.quantity / total_users)
-                for user in self.customer_ids:
-                    lines.append(self._prepare_invoice_line(user, line, quantity_per_user, line.price_unit))
-        elif self.split_selection == 'amount_wise':
-            for line in self.invoice_id.invoice_line_ids:
-                price_per_user = line.price_unit / total_users
-                for user in self.customer_ids:
-                    lines.append(self._prepare_invoice_line(user, line, line.quantity, price_per_user))
-        elif self.split_selection == 'whole_bill':
-            if len(self.customer_ids) > 1:
-                raise ValidationError(_("Cannot split ratio-wise bill among multiple users."))
-            for line in self.invoice_id.invoice_line_ids:
-                self._validate_whole_bill(line)
-                split_quantity = line.quantity * (self.percentage / 100)
-                int_split_quantity = int(split_quantity)
-                for user in self.customer_ids:
-                    if line.product_id.uom_id.category_id.name == "Unit":
-                        print("self.customer_ids,user",self.customer_ids,user)
-                        lines.append(self._prepare_invoice_line(user, line, int_split_quantity, line.price_unit))
-                    else:
-                        lines.append(self._prepare_invoice_line(user, line, split_quantity, line.price_unit * self.percentage / 100))
+        for line in self.invoice_id.invoice_line_ids:
+            if self.split_selection == 'product_wise':
+                self._update_product_line_for_product_wise(total_users,lines,line)
+
+            elif self.split_selection == 'amount_wise':
+                self._update_product_line_for_amount_wise(total_users,lines,line)
+
+            elif self.split_selection == 'whole_bill':
+                self._update_product_line_for_whole_bill(lines,line)
         self.line_ids = lines
+
+    def _update_product_line_for_product_wise(self,total_users,lines,line):
+        # for line in self.invoice_id.invoice_line_ids:
+        quantity_per_user = int(line.quantity / total_users)
+        for user in self.customer_ids:
+            lines.append(self._prepare_invoice_line(user, line, quantity_per_user, line.price_unit))
+
+    def _update_product_line_for_amount_wise(self, total_users, lines,line):
+        # for line in self.invoice_id.invoice_line_ids:
+        price_per_user = line.price_unit / total_users
+        for user in self.customer_ids:
+            print("user",user)
+            lines.append(self._prepare_invoice_line(user, line, line.quantity, price_per_user))
+    def _update_product_line_for_whole_bill(self, lines,line):
+        # for line in self.invoice_id.invoice_line_ids:
+        self._validate_whole_bill(line)
+        split_quantity = line.quantity * (self.percentage / 100)
+        int_split_quantity = int(split_quantity)
+        for user in self.customer_ids:
+            if line.product_id.uom_id.category_id.name == "Unit":
+                lines.append(self._prepare_invoice_line(user, line, int_split_quantity, line.price_unit))
+            else:
+                lines.append(self._prepare_invoice_line(user, line, split_quantity, line.price_unit))
+
 
     def _prepare_invoice_line(self, user, line, quantity, price_unit):
         """Helper function to prepare invoice line dictionary."""
@@ -190,32 +183,23 @@ class SplitInvoiceWizard(models.TransientModel):
     def _validate_whole_bill(self, line):
         """Validation logic for 'whole_bill' selection."""
         uom_category = line.product_id.uom_id.category_id.name
-        if uom_category == "Unit" and (line.quantity == 1 or line.quantity == 0):
+        split_quantity = line.quantity * (self.percentage / 100)
+        if uom_category == "Unit" and (line.quantity == 1 or line.quantity == 0) or split_quantity == line.quantity:
             raise ValidationError(_("Cannot split this product with quantity of 1 or 0."))
-        if uom_category != "Unit" and (line.quantity * self.percentage / 100) < 0.1:
-            raise ValidationError(_("Cannot create a new invoice for this product with insufficient quantity."))
+        if uom_category != "Unit" and split_quantity < 0.5:
+            raise ValidationError(_("Cannot split this product with quantity less then 0.5"))
 
 
     def action_split_invoice(self):
         """Split the invoice for each user based on selected method."""
         # Check if invoice has lines
-        if not self.customer_ids:
-            raise ValidationError(
-                _(f"Please select at least one user."))
-        if not self.invoice_id.invoice_line_ids:
-            raise ValidationError(_("No products in the invoice."))
+        self._action_split_invoice_constrains()
 
         if self.invoice_id.state == 'posted':
             self.invoice_id.button_draft()
 
         for user in self.customer_ids:
-            new_invoice_vals = {
-                'partner_id': user.id,
-                'invoice_date': fields.Date.today(),
-                'move_type': self.invoice_id.move_type,
-                'parent_invoice_id': self.invoice_id.id,
-                'line_ids': [],
-            }
+            new_invoice_vals = self._new_invoice_vals(user)
 
             user_lines = self.line_ids.filtered(lambda l: l.user_id == user and l.selected)
             if not user_lines:
@@ -262,6 +246,24 @@ class SplitInvoiceWizard(models.TransientModel):
                 'res_id': new_invoice.id,
                 'target': 'current',
             }
+
+    def _action_split_invoice_constrains(self):
+        """Check if invoice has lines"""
+        if not self.customer_ids and not self.customers_id:
+            raise ValidationError(
+                _(f"Please select at least one user."))
+        if not self.invoice_id.invoice_line_ids:
+            raise ValidationError(_("No products in the invoice."))
+
+    def _new_invoice_vals(self,user):
+        return {
+                'partner_id': user.id,
+                'invoice_date': fields.Date.today(),
+                'move_type': self.invoice_id.move_type,
+                'parent_invoice_id': self.invoice_id.id,
+                'line_ids': [],
+            }
+
 
 
 class SplitInvoiceLine(models.TransientModel):
