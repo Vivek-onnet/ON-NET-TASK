@@ -2,22 +2,9 @@
 <odoo>
 
     <record id="group_split_bill_admin" model="res.groups">
-        <field name="name">Split Bill Admin</field>
+        <field name="name">Split Invoice and Bill Access</field>
         <field name="category_id" ref="base.module_category_hidden"/>
+        <field name="comment">The user will have access to Split Invoice and Bill.</field>
     </record>
-
-    <!-- Model access for Split Invoice -->
-
-    <record id="model_split_invoice_admin_access" model="ir.model.access">
-        <field name="name">split_invoice_admin_access</field>
-        <field name="model_id" ref="account.model_account_move"/>
-        <field name="group_id" ref="split_invoice_and_bills.group_split_bill_admin"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="1"/>
-        <field name="perm_create" eval="1"/>
-        <field name="perm_unlink" eval="1"/>
-    </record>
-
-
 
 </odoo>
