@@ -1,5 +1,4 @@
-from odoo import models, fields, api
-from odoo.tools.translate import _
+from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 import math
 
@@ -12,9 +11,9 @@ class SplitInvoiceWizard(models.TransientModel):
     customer_ids = fields.Many2many('res.partner', string="Customers")
     customers_id = fields.Many2one('res.partner', string="Customers")
     split_selection = fields.Selection([('whole_bill', 'Ratio wise'), ('product_wise', 'Product wise'), ('amount_wise', 'Amount wise')],string='Split Selection', required=True, default='amount_wise')
-    give_percentage = fields.Integer(string='Percentage', required=True, store=True, default=50)
-    percentage = fields.Integer(string=' Auto tack Percentage', store=True)
-    ratio_display = fields.Char(string="Ratio Display", store=True, help="Displays the ratio in the format 'X:Y'")
+    give_percentage = fields.Integer(string='Percentage', required=True, default=50)
+    percentage = fields.Integer(string=' Auto tack Percentage')
+    ratio_display = fields.Char(string="Ratio Display",  help="Displays the ratio in the format 'X:Y'")
     available_product_ids = fields.Many2many('product.product', string="Available Products",compute='_compute_available_product_ids', store=True)
     product_qty = fields.Float(string='Product Quantity', compute='_compute_product_qty', store=True)
 
@@ -44,7 +43,7 @@ class SplitInvoiceWizard(models.TransientModel):
             if record.invoice_id:
                 record.available_product_ids = record.invoice_id.invoice_line_ids.mapped('product_id')
 
-    @api.depends('give_percentage')
+    @api.depends('give_percentage','invoice_id.invoice_line_ids')
     def _compute_product_qty(self):
         """Calculates the total quantity of products from the original invoice, and store it in product_qty."""
         for record in self:
@@ -298,4 +297,4 @@ class SplitInvoiceLine(models.TransientModel):
     def _compute_total_price(self):
         for line in self:
             line.total_price = line.quantity * line.price_unit
-#
+
