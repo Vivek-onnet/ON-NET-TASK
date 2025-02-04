@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-split_invoice_and_bills.access_split_invoice_wizard,access_split_invoice_wizard,split_invoice_and_bills.model_split_invoice_wizard,split_invoice_and_bills.group_split_bill_admin,1,1,1,1
-split_invoice_and_bills.access_split_invoice_line,access_split_invoice_line,split_invoice_and_bills.model_split_invoice_line,split_invoice_and_bills.group_split_bill_admin,1,1,1,1

@@ -1,358 +1,297 @@
-from odoo import models, fields, api
-from odoo.tools.translate import _
+from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 import math
-
 
 
 class SplitInvoiceWizard(models.TransientModel):
     _name = 'split.invoice.wizard'
 
     invoice_id = fields.Many2one('account.move', string="Invoice")
-    line_ids = fields.One2many('split.invoice.line.wizard', 'wizard_id', string="Invoice Lines")
-    user_ids = fields.Many2many('res.partner', string="Customers", required=True , domain="[('id', 'in', user_partner_id.ids)]")
-    user_partner_id = fields.Many2many('res.partner', string="Customers", required=True ,compute='_compute_user_partner_id')
-    split_selection = fields.Selection([('whole_bill', 'Retio wise'), ('product_wise', 'Product wise'), ('amount_wise', 'Amount wise')],string='Split Selection', required=True, default='amount_wise')
-    give_percentage = fields.Integer(string='Percentage', required=True, store=True, default=50)
-    percentage = fields.Integer(string=' Auto tack Percentage', store=True)
-    ratio_display = fields.Char(string="Ratio Display", store=True,help="Displays the ratio in the format 'X:Y'")
+    line_ids = fields.One2many('split.invoice.line', 'wizard_id', string="Invoice Lines")
+    customer_ids = fields.Many2many('res.partner', string="Customers")
+    customers_id = fields.Many2one('res.partner', string="Customers")
+    split_selection = fields.Selection([('whole_bill', 'Ratio wise'), ('product_wise', 'Product wise'), ('amount_wise', 'Amount wise')],string='Split Selection', required=True, default='amount_wise')
+    give_percentage = fields.Integer(string='Percentage', required=True, default=50)
+    percentage = fields.Integer(string=' Auto tack Percentage')
+    ratio_display = fields.Char(string="Ratio Display",  help="Displays the ratio in the format 'X:Y'")
     available_product_ids = fields.Many2many('product.product', string="Available Products",compute='_compute_available_product_ids', store=True)
     product_qty = fields.Float(string='Product Quantity', compute='_compute_product_qty', store=True)
 
-    @api.depends('invoice_id','user_ids')
-    def _compute_user_partner_id(self):
-        """this make sure remove user which already in parent invoice"""
-        for record in self:
-            if self.invoice_id:
-                partner_id = record.invoice_id.partner_id.id
-                all_partner_ids = self.env['res.partner'].search([]).ids
-                filtered_partner_ids = [pid for pid in all_partner_ids if pid != partner_id]
-                record.user_partner_id = [(6, 0, filtered_partner_ids)]  # 6, 0 syntax to set Many2many relations
-            else:
-                record.user_partner_id = [(5,)]
-
     @api.constrains('give_percentage')
     def _check_give_percentage(self):
-        """this make sure the give percentage is between 0 and 100"""
+        """
+        Ensure the give percentage is between 0 and 100.
+        Raises a ValidationError if not in the correct range.
+        """
         for record in self:
             if not (0 < record.give_percentage < 100):
                 raise ValidationError(_("The Give Percentage must be between 0 and 100."))
 
+    @api.onchange('customers_id', 'split_selection')
+    def _onchange_customer_ids_id(self):
+        """
+        Set the customer_ids field based on the customers_id field
+        when the 'whole_bill' option is selected.
+        """
+        if self.split_selection == 'whole_bill':
+            self.customer_ids = self.customers_id
 
     @api.depends('invoice_id', "line_ids.product_id")
     def _compute_available_product_ids(self):
-        """this method computes the products available for splitting based on the selected"""
+        """Computes the products available for splitting based on the selected"""
         for record in self:
             if record.invoice_id:
-                product_ids = record.invoice_id.invoice_line_ids.mapped('product_id')
-                record.available_product_ids = product_ids
+                record.available_product_ids = record.invoice_id.invoice_line_ids.mapped('product_id')
 
-
-    @api.depends('give_percentage')
+    @api.depends('give_percentage','invoice_id.invoice_line_ids')
     def _compute_product_qty(self):
-        """this method calculates the total quantity of products from the original invoice."""
+        """Calculates the total quantity of products from the original invoice, and store it in product_qty."""
         for record in self:
-            invoice = self.env['account.move'].browse(self._context.get('active_id'))
-            if invoice:
-                all_product_qty = sum(line.quantity for line in invoice.invoice_line_ids)
+            record.product_qty = 0
+            if self.invoice_id:
+                all_product_qty = sum(line.quantity for line in self.invoice_id.invoice_line_ids)
                 record.product_qty = all_product_qty
+
+    @api.onchange('give_percentage', 'customers_id', 'customers_id', 'product_qty')
+    def _onchange_ratio_display(self):
+        """
+        Compute the ratio for splitting the invoice based on the given percentage
+        and product quantity. Displays the ratio in the ratio_display field.
+        """
+        for record in self:
+            if record.give_percentage <= 0:
+                continue
+            if all(line.product_id.uom_id.category_id.name == "Unit" for line in self.invoice_id.invoice_line_ids):
+                self._count_ratio_unit(record)
             else:
-                record.product_qty = 0
+                record.percentage = record.give_percentage
+                second_party_percentage = 100 - record.percentage
+                record.ratio_display = f"{record.percentage}:{second_party_percentage}"
 
-
-
-    @api.onchange('give_percentage','percentage', 'product_qty')
-    def _compute_ratio_display(self):
-        """this method calculates the display ratio for the split based on user inputs."""
-        invoice = self.env['account.move'].browse(self._context.get('active_id'))
-        for user in self.user_ids:
-            user_lines = self.line_ids.filtered(lambda l: l.user_id == user)
-            for line in user_lines:
-                if line.quantity < 1 and line.product_id.uom_id.category_id.name == "Unit":
-                    raise ValidationError(_("We can not create new invoice for this product  with Quantity = 0."))
-
-        if all(line.product_id.uom_id.category_id.name == "Unit" for line in invoice.invoice_line_ids):
-            for record in self:
-                for line in invoice.invoice_line_ids:
-                    # record.ratio_display = 0
-                    # if  line.quantity > 1 and record.product_qty > 2 and record.give_percentage > 0:
-                    if  line.quantity > 1 and record.product_qty > 1 and record.give_percentage > 0:
-                        ratio = record.give_percentage / 100
-                        total_parts = math.ceil(record.product_qty * ratio)
-                        record.percentage = round((total_parts / record.product_qty) * 100)
-                        second_party_percentage = 100 - int(record.percentage)
-                        record.ratio_display = f"{int(record.percentage)}:{int(second_party_percentage)}"
-
-        else:
-            for record in self:
-                for line in invoice.invoice_line_ids:
-                    if record.give_percentage > 0:
-                        record.percentage = record.give_percentage
-                        second_party_percentage = 100 - record.percentage
-                        record.ratio_display = f"{record.percentage}:{second_party_percentage}"
-
-    @api.model
-    def default_get(self, fields):
-        """Load invoice lines by default based on the parent invoice."""
-        result = super(SplitInvoiceWizard, self).default_get(fields)
-        invoice = self.env['account.move'].browse(self._context.get('active_id'))
-        lines = []
-        for line in invoice.invoice_line_ids:
-            lines.append((0, 0, {
-                'product_id': line.product_id.id,
-                'quantity': line.quantity,
-                'price_unit': line.price_unit,
-                'total_price': line.price_subtotal,
-            }))
-        result.update({'line_ids': lines, 'invoice_id': invoice.id})
-        return result
-    # ###########################################################################
+    def _count_ratio_unit(self, record):
+        """
+        Compute the ratio for 'Unit' type products where quantity splitting is
+        done on a unit-by-unit basis. This updates the ratio_display accordingly.
+        """
+        for line in self.invoice_id.invoice_line_ids:
+            if line.quantity > 1 and record.product_qty > 1 and record.give_percentage > 0:
+                ratio = record.give_percentage / 100
+                total_parts = math.ceil(record.product_qty * ratio)
+                record.percentage = round((total_parts / record.product_qty) * 100)
+                second_party_percentage = 100 - record.percentage
+                record.ratio_display = f"{record.percentage}:{second_party_percentage}"
 
     @api.onchange('line_ids')
-    def _onchange_selected(self):
+    def _onchange_update_selected(self):
+        """
+        Updates the 'selected' field of line items based on the 'quantity'.
+        If the quantity is zero, 'selected' is set to False; otherwise, it is set to True.
+        """
         for line in self.line_ids:
-            if line.quantity == 0:
-                line.selected = False
-            else:
-                line.selected = True
-
+            line.selected = line.quantity > 0
 
     @api.constrains('line_ids')
     def _check_quantities(self):
-        """ensure that the total quantitis enter for a product across all lines doesn't exced the available quantity in the original invoice."""
-        if self.split_selection in ['product_wise']:
-            # line.quantity for line in invoice.invoice_line_ids
-            invoice = self.env['account.move'].browse(self._context.get('active_id'))
-            product_quantity_map = {}
+        """
+        Ensure that the total quantities entered for a product across all lines
+        don't exceed the available quantity in the original invoice.
+        Raises a ValidationError if the condition is not met.
+        """
+        if self.split_selection != 'product_wise':
+            return
+        product_quantity_map = {}
+        for line in self.line_ids:
+            product_quantity_map[line.product_id] = product_quantity_map.get(line.product_id, 0) + line.quantity
+            self._quantity_constrains(product_quantity_map)
 
-            for line in self.line_ids:
-                if line.product_id in product_quantity_map:
-                    product_quantity_map[line.product_id] += line.quantity
-                else:
-                    product_quantity_map[line.product_id] = line.quantity
+    def _quantity_constrains(self, product_quantity_map):
+        """
+        Additional validation for quantity constraints for splitting the invoice
+        based on the products selected.
+        """
+        for product, total_quantity in product_quantity_map.items():
+            original_line = self.invoice_id.invoice_line_ids.filtered(lambda l: l.product_id == product)
+            if original_line:
+                original_quantity = original_line[0].quantity
+                if all(line.quantity == 0 for line in self.line_ids):
+                    raise ValidationError(_("Quantity cannot be zero."))
+                for line in self.line_ids:
+                    if line.quantity == 0:
+                        line.selected = False
+                if product.uom_id.category_id.name == "Unit" and not float(total_quantity).is_integer():
+                    raise ValidationError(
+                        _(f"The total quantity for product {product.display_name} must be an integer as the unit of measure is 'Unit'."))
+                if total_quantity >= original_quantity:
+                    raise ValidationError(
+                        _(f"The total quantity entered for product {product.display_name} ({total_quantity}) exceeds the available quantity ({original_quantity}) in the original invoice."))
+                if product.uom_id.category_id.name != "Unit" and total_quantity >= original_quantity and len(
+                        self.line_ids) < 2:
+                    raise ValidationError(
+                        _(f"wEntered quantity for product {product.display_name} ({total_quantity}) is too low compared to the available quantity ({original_quantity}). The minimum quantity should be 0.2 in both invoices."))
 
-            for product, total_quantity in product_quantity_map.items():
-                original_invoice_line = invoice.invoice_line_ids.filtered(lambda l: l.product_id == product)
-
-                if original_invoice_line :
-                    original_quantity = original_invoice_line[0].quantity  # Get the first matching record
-
-
-                    for line in self.line_ids:
-                        if line.quantity == 0:
-                            line.selected = False
-
-                    for line in original_invoice_line:
-                        if line.product_id.uom_id.category_id.name == "Unit":
-                            if not float(total_quantity).is_integer():
-                                raise ValidationError(_(f"The total quantity for product {product.display_name} must be an integer as the unit of measure is 'Unit'."))
-
-                            total_quantity = int(total_quantity)
-
-                            # if total_quantity >= original_quantity and len(self.line_ids) < 2:
-                            if total_quantity >= original_quantity and len(invoice.invoice_line_ids) < 2:
-                                # print("self.line_ids1", self.line_ids)
-                                # print("self.invoice.invoice_line_ids", invoice.invoice_line_ids)
-
-                                raise ValidationError(_(f"The total quantity entered for product {product.display_name} across all lines "
-                                    f"({total_quantity}) exceeds the available quantity ({original_quantity}) in the original invoice."))
-
-                        elif line.product_id.uom_id.category_id.name != "Unit":
-                            if total_quantity >= original_quantity - 0.01  and len(self.line_ids) < 2:
-                                # print("self.line_ids2", self.line_ids)
-                                raise ValidationError(_(
-                                    f"The total quantity entered for product {product.display_name} across all lines "
-                                    f"({total_quantity}) is very low compared to the available quantity ({original_quantity}) in the original invoice."
-                                ))
-
-    @api.onchange('user_ids', 'split_selection', 'give_percentage')
+    @api.onchange('customer_ids', 'split_selection', 'give_percentage')
     def _onchange_user_and_product(self):
-        """in the table,update the product lines based on the selected users and allow manual quantity entry."""
+        """Update product lines based on selected users and split selection."""
+        self.line_ids = [(6, 0, [])]
+        if not self.customer_ids:
+            return
+        total_users = len(self.customer_ids) + 1
+        lines = []
+        for line in self.invoice_id.invoice_line_ids:
+            if self.split_selection == 'product_wise':
+                self._update_product_line_for_product_wise(total_users, lines, line)
 
-        if self.split_selection == 'product_wise':
-            self.line_ids = [(6, 0, [])]
-            if self.user_ids:
-                invoice = self.env['account.move'].browse(self._context.get('active_id'))
-                lines = []
-                total_users = len(self.user_ids) + 1  # Including the original invoice user
+            elif self.split_selection == 'amount_wise':
+                self._update_product_line_for_amount_wise(total_users, lines, line)
 
-                for line in invoice.invoice_line_ids:
-                    for user in self.user_ids:
-                        lines.append((0, 0, {
-                            'user_id': user.id,
-                            'product_id': line.product_id.id,
-                            'quantity': int( line.quantity / total_users),
-                            'price_unit': line.price_unit,
-                        }))
-                self.line_ids = lines
+            elif self.split_selection == 'whole_bill':
+                self._update_product_line_for_whole_bill(lines, line)
+        self.line_ids = lines
 
-        elif self.split_selection == 'amount_wise':
-            self.line_ids = [(6, 0, [])]
-            if self.user_ids:
-                invoice = self.env['account.move'].browse(self._context.get('active_id'))
-                lines = []
-                total_users = len(self.user_ids) + 1
+    def _update_product_line_for_product_wise(self, total_users, lines, line):
+        """
+        Update product lines for 'product_wise' split, assigning each customer
+        a portion of the quantity.
+        """
+        quantity_per_user = int(line.quantity / total_users)
+        for user in self.customer_ids:
+            lines.append(self._prepare_invoice_line(user, line, quantity_per_user, line.price_unit))
 
-                for line in invoice.invoice_line_ids:
-                        original_price_per_user = line.price_unit / total_users
-                        for user in self.user_ids:
-                            lines.append((0, 0, {
-                                'user_id': user.id,
-                                'product_id': line.product_id.id,
-                                'quantity': line.quantity,
-                                'price_unit': original_price_per_user,
-                                'total_price': line.price_subtotal,
-                            }))
-                self.line_ids = lines
+    def _update_product_line_for_amount_wise(self, total_users, lines, line):
+        """
+        Update product lines for 'amount_wise' split, assigning each customer
+        a portion of the total amount.
+        """
+        price_per_user = line.price_unit / total_users
+        for user in self.customer_ids:
+            lines.append(self._prepare_invoice_line(user, line, line.quantity, price_per_user))
 
-
-        elif self.split_selection == 'whole_bill':
-            if len(self.user_ids) > 1:
-                raise ValidationError(_("You can not split Ratio Wise Bill more than on user"))
+    def _update_product_line_for_whole_bill(self, lines, line):
+        """
+        Update product lines for 'whole_bill' split, splitting the entire invoice
+        proportionally between customers.
+        """
+        self._validate_whole_bill(line)
+        split_quantity = line.quantity * (self.percentage / 100)
+        int_split_quantity = int(split_quantity)
+        for user in self.customer_ids:
+            if line.product_id.uom_id.category_id.name == "Unit":
+                lines.append(self._prepare_invoice_line(user, line, int_split_quantity, line.price_unit))
             else:
-                for line in self.invoice_id.invoice_line_ids:
-                    if line.product_id.uom_id.category_id.name == "Unit":
-                        if line.quantity == 1:
-                            raise ValidationError(_("You can not split Ratio Wise Bill of this type of Product"))
-                        if line.quantity == 0:
-                            raise ValidationError(_(f"We can not create new invoice for this product with Ratio = 0."))
-                    elif line.product_id.uom_id.category_id.name != "Unit":
-                        if (line.quantity * self.percentage / 100) < 0.1:
-                            raise ValidationError(_(f"We can not create new invoice for this product !!!"))
+                lines.append(self._prepare_invoice_line(user, line, split_quantity, line.price_unit))
 
+    def _prepare_invoice_line(self, user, line, quantity, price_unit):
+        """Helper function to prepare invoice line dictionary for each customer."""
+        return (0, 0, {
+            'line_customer_id': user.id,
+            'product_id': line.product_id.id,
+            'quantity': quantity,
+            'price_unit': price_unit,
+        })
 
-                self.line_ids = [(6, 0, [])]
-                if self.user_ids:
-                    invoice = self.env['account.move'].browse(self._context.get('active_id'))
-                    lines = []
-                    for line in invoice.invoice_line_ids:
-                        split_quantity = line.quantity * (self.percentage / 100)
-                        if line.product_id.uom_id.category_id.name == "Unit":
-                        # if all(line.product_id.uom_id.category_id.name == "Unit" for line in invoice.invoice_line_ids):
-                            for user in self.user_ids:
-                                lines.append((0, 0, {
-                                    'user_id': user.id,
-                                    'product_id': line.product_id.id,
-                                    'quantity': int(split_quantity),
-                                    'price_unit': line.price_unit,
-                                }))
-                        elif line.product_id.uom_id.category_id.name != "Unit":
-                            for user in self.user_ids:
-                                lines.append((0, 0, {
-                                    'user_id': user.id,
-                                    'product_id': line.product_id.id,
-                                    'quantity': (line.quantity * self.percentage / 100),
-                                    'price_unit': line.price_unit,
-                                }))
-
-                    self.line_ids = lines
-
+    def _validate_whole_bill(self, line):
+        """
+        Validation logic for 'whole_bill' selection to ensure that the quantity
+        and split percentage are correct.
+        """
+        uom_category = line.product_id.uom_id.category_id.name
+        split_quantity = line.quantity * (self.percentage / 100)
+        if uom_category == "Unit" and (line.quantity == 1 or line.quantity == 0) or split_quantity == line.quantity:
+            raise ValidationError(_("Cannot split this product with quantity of 1 or 0."))
+        if uom_category != "Unit" and split_quantity < 0.5:
+            raise ValidationError(_("Cannot split this product with quantity less then 0.5"))
 
     def action_split_invoice(self):
-        """Split the invoice for each user with progressive product allocation."""
-        active_invoice = self.env['account.move'].browse(self._context.get('active_id'))
-        if not  self.invoice_id.invoice_line_ids:
+        """
+        Perform the invoice split by creating new invoices for each customer
+        based on the selected split method.
+        """
+        # Check if invoice has lines
+        self._action_split_invoice_constrains()
+
+        if self.invoice_id.state == 'posted':
+            self.invoice_id.button_draft()
+
+        for user in self.customer_ids:
+            new_invoice_vals = self._new_invoice_vals(user)
+
+            user_lines = self.line_ids.filtered(lambda l: l.line_customer_id == user and l.selected)
+            if not user_lines:
+                raise ValidationError(_(f"No products selected for user {user.name}."))
+
+            for line in user_lines:
+                original_line = self.invoice_id.invoice_line_ids.filtered(
+                    lambda l: l.product_id.id == line.product_id.id)
+
+                if not original_line:
+                    raise ValidationError(_("Product does not exist in the original invoice."))
+
+                # Split invoice by amount
+                if self.split_selection == 'amount_wise':
+                    original_line.quantity = line.quantity
+                    original_line.price_unit = line.price_unit
+
+                # Split invoice by product quantity
+                elif self.split_selection == 'product_wise':
+                    total_qty = sum(l.quantity for l in self.invoice_id.invoice_line_ids)
+                    if original_line.product_id.uom_id.category_id.name == "Unit" and total_qty <= line.quantity:
+                        raise ValidationError(_("Cannot split invoice for this product with quantity < 1."))
+                    original_line.quantity -= line.quantity
+
+                # Split entire bill
+                elif self.split_selection == 'whole_bill':
+                    if original_line.product_id.uom_id.category_id.name == "Unit" and line.quantity < 1:
+                        raise ValidationError(_("Cannot create invoice with quantity < 1."))
+                    original_line.quantity -= line.quantity
+
+                new_invoice_vals['line_ids'].append((0, 0, {
+                    'product_id': line.product_id.id,
+                    'quantity': line.quantity,
+                    'price_unit': line.price_unit,
+                }))
+
+            # Create a new invoice for the user
+            new_invoice = self.env['account.move'].create(new_invoice_vals)
+
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.move',
+            'view_mode': 'form',
+            'res_id': new_invoice.id,
+            'target': 'current',
+        }
+
+    def _action_split_invoice_constrains(self):
+        """Check if invoice has lines"""
+        if not self.customer_ids and not self.customers_id:
             raise ValidationError(
-                _(f"You have not any Product in the Cart!!!!"))
+                _(f"Please select at least one user."))
+        if not self.invoice_id.invoice_line_ids:
+            raise ValidationError(_("No products in the invoice."))
 
-        for line in self.invoice_id.invoice_line_ids:
-            if not line.quantity or not line :
-                raise ValidationError(
-                    _(f"We can not create new invoice for this product with Quantity = 0."))
-
-            elif line.quantity and line.quantity == 0.0:
-                raise ValidationError(
-                    _(f"We can not create new invoice for this product  with Quantity = 0."))
-
-            else:
-                if active_invoice.state == 'posted':
-                    active_invoice.button_draft()
-
-                for user in self.user_ids:
-                    new_invoice_vals = {
-                        'partner_id': user.id,
-                        'invoice_date': fields.Date.today(),
-                        'move_type': active_invoice.move_type,
-                        'parent_invoice_id': active_invoice.id,
-                        'line_ids': [],
-                    }
-                    user_lines = self.line_ids.filtered(lambda l: l.user_id == user)
-
-                    for line in user_lines:
-                        if line.selected:
-                            new_invoice_vals['line_ids'].append((0, 0, {
-                                'product_id': line.product_id.id,
-                                'quantity': line.quantity,
-                                'price_unit': line.price_unit,
-
-                            }))
-                            if self.split_selection == 'amount_wise':
-                                total_users = len(self.user_ids) + 1
-                                original_line = active_invoice.invoice_line_ids.filtered(
-                                    lambda l: l.product_id.id == line.product_id.id)
-                                if original_line:
-                                    original_line.quantity = line.quantity
-                                    original_line.price_unit = line.price_unit
-
-                            elif self.split_selection == 'product_wise':
-
-                                original_line = active_invoice.invoice_line_ids.filtered(
-                                    lambda l: l.product_id.id == line.product_id.id)
-                                if original_line:
-                                    all_product_qty = sum(line.quantity for line in active_invoice.invoice_line_ids)
-                                    # print("all_product_qty",all_product_qty,(original_line.quantity - line.quantity),original_line.quantity, line.quantity,len(active_invoice.invoice_line_ids))
-
-                                    if all(( o.quantity - line.quantity) < 1 for o in original_line) and len(active_invoice.invoice_line_ids) < 2:
-                                        raise ValidationError(
-                                            _(f"We can not create new invoice for this product  with Quantity = 0."))
-                                    elif all(( o.quantity - line.quantity) < 1 for o in original_line) and original_line.quantity == line.quantity and all_product_qty == original_line.quantity:
-                                        raise ValidationError(
-                                            _(f"We can not create new invoice for this product  with Quantity = 0."))
-                                    else:
-                                        original_line.quantity -= line.quantity
-                                        original_line.price_unit = original_line.price_unit
-
-                            elif self.split_selection == 'whole_bill':
-                                if len(self.user_ids) > 1:
-                                    raise ValidationError(_("You can not split Ratio Wise Bill more than on user"))
-                                elif line.product_id.uom_id.category_id.name == "Unit" and  line.quantity < 1:
-                                    raise ValidationError(_("We can not create new invoice for this product  with Quantity < 1."))
-                                else:
-                                    original_line = active_invoice.invoice_line_ids.filtered(
-                                        lambda l: l.product_id.id == line.product_id.id)
-                                    if original_line:
-                                        original_line.quantity -= line.quantity
-                        if len(self.line_ids) == 1:
-                            line = self.line_ids[0]
-                            if not line.selected and line.quantity == 0:
-                                raise ValidationError(_(
-                                    f"We cannot split the invoice for product '{line.product_id.display_name}' with Quantity = 0 and it is not selected."
-                                ))
+    def _new_invoice_vals(self, user):
+        """
+        Helper function to Create a new invoice line dictionary for a specific customer.
+        """
+        return {
+            'partner_id': user.id,
+            'invoice_date': fields.Date.today(),
+            'move_type': self.invoice_id.move_type,
+            'parent_invoice_id': self.invoice_id.id,
+            'line_ids': [],
+        }
 
 
-                    # Create a new invoice for the user
-                    new_invoice = self.env['account.move'].create(new_invoice_vals)
-
-                return {
-                    'type': 'ir.actions.act_window',
-                    'res_model': 'account.move',
-                    'view_mode': 'form',
-                    'res_id': new_invoice.id,
-                    'target': 'current',
-                }
-
-
-class SplitInvoiceLineWizard(models.TransientModel):
-    _name = 'split.invoice.line.wizard'
+class SplitInvoiceLine(models.TransientModel):
+    _name = 'split.invoice.line'
 
     wizard_id = fields.Many2one('split.invoice.wizard', string="Wizard")
-    product_id = fields.Many2one('product.product', string="Product",
-                                 domain="[('id', 'in', parent.available_product_ids)]")
+    product_id = fields.Many2one('product.product', string="Product",domain="[('id', 'in', parent.available_product_ids)]")
     total_price = fields.Float(string='Total Price', compute='_compute_total_price', store=True)
     quantity = fields.Float(string='Quantity', required=True)
     price_unit = fields.Float(string="Unit Price")
     selected = fields.Boolean(string='Select', default=True)
-    user_id = fields.Many2one('res.partner', string="Customer", required=True, domain="[('id', 'in', parent.user_ids)]")
+    line_customer_id = fields.Many2one('res.partner', string="Customer", required=True,domain="[('id', 'in', parent.customer_ids)]")
 
     @api.depends('quantity', 'price_unit')
     def _compute_total_price(self):

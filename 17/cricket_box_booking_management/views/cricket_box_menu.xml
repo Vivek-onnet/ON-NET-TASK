@@ -1,0 +1,44 @@
+<odoo>
+
+
+    <!--  MenuItem for registration, configuration  -->
+    <menuitem id="box" name="Cricket Box Booking"/>
+    <menuitem id="box_ticket" name="Boxes" parent="cricket_box_booking_management.box"
+              action="cricket_box_action" sequence="1"/>
+    <menuitem id="box_registration" name="Registration"
+              parent="cricket_box_booking_management.box"/>
+    <menuitem id="box_configuration" name="Configuration"
+              parent="cricket_box_booking_management.box" sequence="5"/>
+
+    <!--  MenuItem for  cricket_box_registration  -->
+    <menuitem id="cricket_box_registration" name="Bookings"
+              groups="cricket_box_booking_management.group_cricket_box_admin"
+              action="cricket_box_registration_action"
+              parent="cricket_box_booking_management.box"
+              sequence="3"/>
+
+    <!-- Invoices menu categories -->
+    <menuitem id="Invoice" name="Invoices"
+              parent="cricket_box_booking_management.box"
+              groups="cricket_box_booking_management.group_cricket_box_admin"
+              sequence="4"/>
+
+    <!--Memebers Invoices Sub-menu item-->
+    <menuitem id="cricket_box_invoice" name="Invoice" parent="Invoice" action="action_cricket_box_invoices_window"/>
+
+    <menuitem id="cricket_box_credit_Notes" name="Credit Notes" parent="Invoice"
+              action="action_cricket_box_move_out_refund_type"/>
+
+    <!--  MenuItem for time slots  -->
+    <menuitem id="time_slots" name="Time Slots"
+              groups="cricket_box_booking_management.group_cricket_box_admin"
+              parent="cricket_box_booking_management.box_configuration" action="time_slots_action"/>
+
+    <!--  MenuItem for time slots  -->
+    <menuitem id="all_date_of_box" name="Available dates"
+              groups="cricket_box_booking_management.group_cricket_box_user"
+              action="all_date_action"
+              parent="cricket_box_booking_management.box"
+              sequence="2"/>
+
+</odoo>
