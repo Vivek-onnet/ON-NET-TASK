@@ -1,0 +1,49 @@
+<odoo>
+
+    <!--   this is view for res.config.settings with email notification -->
+    <record id="view_res_config_settings_email" model="ir.ui.view">
+        <field name="name">email.config.settings</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='invoicing_settings']" position="after">
+                <block title="Email Notification" id="email_notification">
+                    <setting id="email_notification" help="Activate to send email notifications for overdue payment reminders">
+                        <field name="email_notification"/>
+                        <div class="mt16">
+                            <div class="content-group" invisible="not email_notification">
+                                <label for="notification_days"/>
+                                <field name="notification_days"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_res_config_settings" model="ir.actions.act_window">
+        <field name="name">Config of email</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'account', 'bin_size': False}</field>
+    </record>
+
+
+<!--  this is view for res.partner for skip email notification  -->
+    <record id="view_partner_form_inherit_skip_email_reminder" model="ir.ui.view">
+        <field name="name">res.partner.form.skip.email.reminder</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <group name="sale" position="before">
+                <group string="Email Notification" name="skip_email_reminder">
+                    <field name="skip_email_reminder"/>
+                </group>
+            </group>
+        </field>
+    </record>
+
+
+</odoo>

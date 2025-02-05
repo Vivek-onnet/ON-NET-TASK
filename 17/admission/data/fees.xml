@@ -1,0 +1,9 @@
+<odoo>
+    <data>
+        <record id="fee_1" model="product.product">
+            <field name="name">Fee 1</field>
+            <field name="type">service</field>
+            <field name="lst_price">1000</field>
+        </record>
+    </data>
+</odoo>

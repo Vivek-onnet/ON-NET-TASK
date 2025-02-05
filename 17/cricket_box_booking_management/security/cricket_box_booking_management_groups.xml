@@ -1,0 +1,29 @@
+<odoo>
+    <!-- Parent and Sub Category for Cricket Box Booking Groups -->
+    <record model="ir.module.category" id="cricket_box_parent_category">
+        <field name="name">Cricket Box Management</field>
+    </record>
+
+    <record model="ir.module.category" id="cricket_box_sub_category">
+        <field name="name">Cricket Box Sub Category</field>
+        <field name="parent_id" ref="cricket_box_parent_category"/>
+    </record>
+
+    <!-- Security Groups -->
+    <!-- Group: User -->
+    <record id="group_cricket_box_user" model="res.groups">
+        <field name="name">Cricket Box Booking Management User</field>
+        <field name="category_id" ref="cricket_box_sub_category"/>
+        <field name="comment">Users will have limited access to Cricket Box Booking Management.</field>
+    </record>
+
+    <!-- Group: Admin -->
+    <record id="group_cricket_box_admin" model="res.groups">
+        <field name="name">Cricket Box Booking Management Admin</field>
+        <field name="category_id" ref="cricket_box_sub_category"/>
+        <field name="implied_ids" eval="[(4, ref('cricket_box_booking_management.group_cricket_box_user'))]"/>
+        <field name="comment">Admins will have full access to Cricket Box Booking Management.</field>
+    </record>
+
+
+</odoo>

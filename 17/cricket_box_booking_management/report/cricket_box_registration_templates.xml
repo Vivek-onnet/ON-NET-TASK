@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Pass Report Template -->
+    <template id="report_cricket_box_pass">
+        <t t-call="web.basic_layout">
+            <div class="page" style=" font-family: Arial, sans-serif; ">
+                <div class="oe_structure"/>
+                <div class="pos-receipt"
+                     style="width: 80mm; padding: 15px; font-size: 10pt; border: 2px solid #000; border-radius: 8px; background: #f9f9f9;">
+
+                    <t t-foreach="docs" t-as="doc">
+                        <!-- Header Section -->
+                        <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px;">
+                            <h2 style="margin: 0; color: #0073e6;">Cricket Box Pass</h2>
+                            <h3 style="margin: 5px 0; font-weight: bold; color: #000;">
+                                <t t-esc="doc.name"/>
+                            </h3>
+                        </div>
+
+
+                        <!-- Box Poster Section -->
+                        <div class="image-container" style="flex: 1; text-align: center; margin-bottom: 15px;">
+                            <img t-att-src="image_data_uri(doc.box_id.box_poster)" alt="Box Poster"
+                                 style="width: 250px; height: 200px; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);"/>
+                        </div>
+
+                        <!-- Ticket Information Section -->
+                        <div class="receipt-pass-data" style="margin-top: 10px;">
+
+                            <table style="width: 100%; margin-top: 10px;">
+                                <tr>
+                                    <td style="padding: 5px;">Name:</td>
+                                    <td style="padding: 5px; font-weight: bold;">
+                                        <t t-esc="doc.partner_id.name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;">Box:</td>
+                                    <td style="padding: 5px; font-weight: bold;">
+                                        <t t-esc="doc.box_id.name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;">Date:</td>
+                                    <td style="padding: 5px; font-weight: bold;">
+                                        <t t-esc="doc.date"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;">Slots:</td>
+                                    <td style="padding: 5px;">
+                                        <t t-foreach="doc.time_slot_id" t-as="slot">
+                                            <span style="padding: 5px;">
+                                                <strong>
+                                                    <t t-esc="slot.name"/>
+                                                </strong>
+                                                ,
+                                            </span>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;">Number of Slots:</td>
+                                    <td style="padding: 5px; font-weight: bold;">
+                                        <t t-esc="doc.no_of_tickets"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Footer Section -->
+                        <div style="text-align: center; margin-top: 20px; border-top: 2px solid #000; padding-top: 10px;">
+                            <strong style="font-size: 12pt; color: #0073e6;">Enjoy Your Time!</strong>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Paper Format for  Pass -->
+    <record id="paper_format_cricket_box" model="report.paperformat">
+        <field name="name">Pass Receipt</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_height">140</field>
+        <field name="page_width">80</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+    </record>
+
+    <!-- Action Report for Pass -->
+    <record id="action_report_cricket_box_pass" model="ir.actions.report">
+        <field name="name">Cricket Box Pass</field>
+        <field name="model">cricket.box.registration</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">cricket_box_booking_management.report_cricket_box_pass</field>
+        <field name="report_file">cricket_box_booking_management.report_cricket_box_pass</field>
+        <field name="binding_model_id"
+               ref="cricket_box_booking_management.model_cricket_box"/>
+        <field name="paperformat_id"
+               ref="cricket_box_booking_management.paper_format_cricket_box"/>
+    </record>
+
+
+
+</odoo>

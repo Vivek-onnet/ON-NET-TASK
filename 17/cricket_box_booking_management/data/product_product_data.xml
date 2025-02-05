@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+<!--     Box Pass as Service Product    -->
+        <record id="product_1" model="product.product">
+            <field name="name">Box Pass</field>
+            <field name="type">service</field>
+        </record>
+
+        <record id="test_menu" model="website.menu">
+            <field name="name">Box Registration</field>
+            <field name="url">/my/cricket_box</field>
+            <field name="parent_id" ref="website.main_menu" />
+            <field name="sequence" type="int">30</field>
+        </record>
+    </data>
+
+
+</odoo>

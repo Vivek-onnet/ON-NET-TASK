@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--   Search View  -->
+    <record id="cricket_box_view_search" model="ir.ui.view">
+        <field name="name">cricket.box.view.search</field>
+        <field name="model">cricket.box</field>
+        <field name="arch" type="xml">
+            <search string="Search Tips">
+                <field name="name" string="Name"/>
+                <field name="city" string="City"/>
+                <field name="state" string="State"/>
+                <filter name="filter_boxs_ongoing" string="Ongoing" domain="[('state','=','ongoing')]"/>
+                <filter name="filter_boxs_draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="filter_boxs_cancel" string="Cancelled" domain="[('state','=','cancel')]"/>
+                <group string="Group By">
+                    <filter name="State" string="State"
+                            context="{'group_by':'state'}"/>
+                    <filter string="City" name="cities"
+                            context="{'group_by': 'city'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!--   Kanban View  -->
+    <record id="cricket_box_view_kanban" model="ir.ui.view">
+        <field name="name">cricket.box.view.kanban</field>
+        <field name="model">cricket.box</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="id"/>
+                <field name="box_poster"/>
+                <field name="price"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <img t-att-src="kanban_image('cricket.box', 'box_poster', record.id.raw_value)"
+                                     alt="Box Poster"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                                <ul>
+                                    <li>
+                                        <strong>Price:
+                                            <field name="price"/>
+                                            / hour
+                                        </strong>
+                                    </li>
+                                    <!--                                    <li>-->
+                                    <!--                                        <strong>Time Slots:-->
+                                    <!--                                            <field name="select_dates"/>-->
+
+                                    <!--                                        </strong>-->
+                                    <!--                                    </li>-->
+                                </ul>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--   Form View  -->
+    <record id="cricket_box_view_form" model="ir.ui.view">
+        <field name="name">cricket.box.view.form</field>
+        <field name="model">cricket.box</field>
+        <field name="arch" type="xml">
+            <form string="Cricket Box">
+                <header groups="cricket_box_booking_management.group_cricket_box_admin">
+                    <button name="action_start" type="object" string="Start"
+                            invisible="state not in ['draft']" class="btn-primary"/>
+                    <button name="action_reset" type="object" string="Reset" invisible="state not in ['cancel']"/>
+                    <button name="action_cancel" type="object" string="Stop"
+                            invisible="state not in ['ongoing']" class="btn-primary"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                     <div class="oe_button_box" name="button_box" groups="cricket_box_booking_management.group_cricket_box_admin">
+                        <button name="action_open_invoices" class="oe_stat_button"
+                                string="Invoices" type="object"
+                                invisible="state in ['draft']"
+                                icon="fa-tasks"/>
+                        <button name="action_open_credit_note" class="oe_stat_button"
+                                string="Credit Note" type="object"
+                                invisible="state in ['draft']"
+                                icon="fa-tasks"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" required="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <label for="street" string="Address"/>
+                            <div>
+                                <field name="street" placeholder="Street..."/>
+                                <div class="address_format">
+                                    <field name="city" placeholder="City" style="width: 40%"/>
+                                    <field name="state_id" class="oe_no_button" placeholder="State" style="width: 37%"
+                                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"
+                                           on_change="1"
+                                           can_create="True" can_write="True"/>
+                                    <field name="zip" placeholder="ZIP" style="width: 22%" on_change="1"/>
+                                </div>
+                            </div>
+                            <field name="email" required="1"/>
+                            <field name="phone" required="1"/>
+<!--                            <field name="duration" required="1"/>-->
+                        </group>
+                        <group>
+                            <field name="box_poster" widget="image" options="{'size': [185, 280]}" required="1"/>
+                            <field name="price" required="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="About">
+                            <field name="about_cricket_box" placeholder="Overview of the Cricket Box"/>
+                        </page>
+                        <page string="Dates">
+                            <field name="select_dates">
+                                <kanban action="action_reg_box"
+                                        type="object">
+                                    <field name="date"/>
+                                    <field name="available_time_slots_ids" on_change="1"
+                                           widget="many2many_tags" required="0" options="{'color_field': 'color'}"/>
+                                    <field name="booked_time_slots_ids" widget="many2many_tags"/>
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <div class="oe_kanban_global_click">
+                                                <div class="oe_kanban_details">
+                                                    <strong class="o_kanban_record_title">
+                                                        <field name="box_id"/>
+                                                    </strong>
+                                                    <ul>
+                                                        <li>
+                                                            <strong>Date:
+                                                                <field name="date"/>
+                                                            </strong>
+                                                        </li>
+                                                        <li>
+                                                            <strong>Time Slots:
+                                                                <field name="booked_time_slots_ids"/>
+                                                                <field name="available_time_slots_ids"
+                                                                       options="{'color_field': 'color'}"/>
+                                                            </strong>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
+                        </page>
+                        <page string="Members" groups="cricket_box_booking_management.group_cricket_box_admin">
+                            <field name="partner_id" default_group_by="state" mode="kanban">
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--  Tree View  -->
+    <record id="cricket_box_view_tree" model="ir.ui.view">
+        <field name="name">cricket.box.view.tree</field>
+        <field name="model">cricket.box</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="email" />
+                <field name="phone" />
+<!--                <field name="duration"/>-->
+                <field name="price"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <!--  Action Box Cricket  -->
+    <record id="cricket_box_action" model="ir.actions.act_window">
+        <field name="name">cricket_box</field>
+        <field name="res_model">cricket.box</field>
+        <field name="view_mode">kanban,form,tree</field>
+        <field name="context">{"search_default_cities": 1}</field>
+    </record>
+
+
+    <!--        Search View for cricket_box  Invoice -->
+    <record id="cricket_box_invoices_search_view" model="ir.ui.view">
+        <field name="name">cricket.box.invoices.search.view</field>
+        <field name="model">account.move</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter string="Invoices" name="invoices" domain="[('is_booking_invoice', '=', True)]"/>
+                <filter string="Box" name="box_id"  context="{'group_by': 'box_id'}"/>
+            </search>
+        </field>
+    </record>
+
+
+    <!-- actions opening views on models -->
+    <record id="action_cricket_box_invoices_window"
+            model="ir.actions.act_window">
+        <field name="name">Cricket Box Invoices Window</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_booking_invoice', '=', True),('move_type', '=', 'out_invoice')]</field>
+        <field name="context">{'search_default_box_id' : 1,'default_move_type': 'out_invoice','search_default_group_by_box_id' : 1}</field>
+        <field name="search_view_id" ref="cricket_box_invoices_search_view"/>
+    </record>
+
+
+    <record id="action_cricket_box_move_out_refund_type" model="ir.actions.act_window">
+        <field name="name">Cricket Box Credit Notes</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_booking_invoice', '=', True),('move_type', '=', 'out_refund')]</field>
+        <field name="context">{'search_default_box_id' : 1,'default_move_type': 'out_refund','search_default_group_by_box_id' : 1}</field>
+
+<!--        <field name="context">{'default_move_type': 'out_refund', 'display_account_trust': True ,'search_default_box_id' : 1}</field>-->
+        <field name="search_view_id" ref="cricket_box_invoices_search_view"/>
+    </record>
+
+
+</odoo>

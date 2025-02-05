@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+admission.access_admission_subject,access_admission_subject,admission.model_admission_subject,base.group_user,1,1,1,1
+admission.access_admission_standard_subject_line,access_admission_standard_subject_line,admission.model_admission_standard_subject_line,base.group_user,1,1,1,1
+admission.access_admission_standard,access_admission_standard,admission.model_admission_standard,base.group_user,1,1,1,1
+admission.access_admission_registration_fee_line,access_admission_registration_fee_line,admission.model_admission_registration_fee_line,base.group_user,1,1,1,1
+admission.access_admission_registration,access_admission_registration,admission.model_admission_registration,base.group_user,1,1,1,1
+admission.access_admission_rejection_wizard,access_admission_rejection_wizard,admission.model_admission_rejection_wizard,base.group_user,1,1,1,1

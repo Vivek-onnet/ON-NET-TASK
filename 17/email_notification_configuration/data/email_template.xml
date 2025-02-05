@@ -1,0 +1,46 @@
+<odoo>
+    <record id="email_template_due_notification" model="mail.template">
+        <field name="name">Invoice Due Notification</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="subject">Reminder: Invoice {{ (object.name) }} Payment Due on {{ (object.invoice_date_due) }}</field>
+        <field name="email_from">{{ (object.user_id.email) }}</field>
+        <field name="partner_to">{{ object.partner_id.id }}</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p style="margin: 0px; padding: 0px; font-size: 12px;">
+                    Dear <span style="font-weight:bold;" t-out="object.partner_id.name or ''">Customer</span>,
+                    <br/>
+                    <br/>
+                    This is a friendly reminder that we haven’t received payment for invoice
+                    <span style="font-weight:bold;" t-out="object.name or ''">INV0001</span>. The payment was due on
+                    <span style="font-weight:bold;" t-out="object.invoice_date_due or ''">2024-12-01</span>.
+                    <br/>
+                    <br/>
+                    Please let us know when we can expect to receive payment for this invoice. If you have any queries,
+                    don’t hesitate to let us know.
+                    <br/>
+                    <br/>
+                    <t t-if="object.company_id">
+                        Sincerely,
+                        <br/>
+                        <span style="font-weight:bold;" t-out="object.company_id.name or ''">Your Company</span>
+                        <br/>
+                    </t>
+                </p>
+            </div>
+        </field>
+    </record>
+
+
+    <!--    this cron job is called every day automatically -->
+    <record id="ir_cron_send_due_notifications" model="ir.cron">
+        <field name="name">Send Invoice Due Notifications</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="state">code</field>
+        <field name="code">model._send_due_date_notifications()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+    </record>
+</odoo>

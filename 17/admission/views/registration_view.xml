@@ -1,0 +1,202 @@
+<!--<odoo>-->
+
+<!--    <record id="student_registration_view_form" model="ir.ui.view">-->
+<!--        <field name="name">Student Registration View</field>-->
+<!--        <field name="model">registration</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <form>-->
+<!--                <header>-->
+<!--                    <button name="action_reject" string="Reject"-->
+<!--                            type="object" class="btn-primary" />-->
+<!--&lt;!&ndash;                            invisible="status  in ['draft']"/>&ndash;&gt;-->
+<!--                     <button name="action_confirm" string="Confirm"-->
+<!--                            type="object" class="btn-primary" />-->
+<!--&lt;!&ndash;                             invisible="status  in ['draft']"/>&ndash;&gt;-->
+
+<!--                    <field name="status" widget="statusbar"/>-->
+<!--                </header>-->
+<!--                <sheet>-->
+<!--                    <div class="oe_button_box" name="button_box">-->
+<!--                        <button name="action_open_invoices" class="oe_stat_button"-->
+<!--                                string="Invoices" type="object"-->
+<!--                                icon="fa-tasks"/>-->
+<!--&lt;!&ndash;                                invisible="status not in ['confirm']"&ndash;&gt;-->
+<!--                    </div>-->
+<!--                    <group>-->
+<!--                        <group>-->
+<!--                            <field name="name"/>-->
+<!--                            <field name="age"/>-->
+<!--                            <field name="date_of_birth"/>-->
+<!--                        </group>-->
+<!--                        <group>-->
+<!--                            <field name="medium"/>-->
+<!--                            <field name="standard"/>-->
+<!--                        </group>-->
+<!--                    </group>-->
+<!--                </sheet>-->
+<!--            </form>-->
+<!--        </field>-->
+<!--    </record>-->
+
+<!--    <record id="student_registration_view_tree" model="ir.ui.view">-->
+<!--        <field name="name">student.registration.view.tree</field>-->
+<!--        <field name="model">registration</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <tree>-->
+<!--                <field name="name"/>-->
+<!--                <field name="age"/>-->
+<!--                <field name="date_of_birth"/>-->
+<!--                <field name="medium"/>-->
+<!--                <field name="standard"/>-->
+<!--            </tree>-->
+<!--        </field>-->
+<!--    </record>-->
+
+<!--    <record id="registration_action" model="ir.actions.act_window">-->
+<!--        <field name="name">Registration</field>-->
+<!--        <field name="res_model">registration</field>-->
+<!--        <field name="view_mode">tree,form</field>-->
+<!--    </record>-->
+
+
+<!--    <menuitem id="admission" name="Admission"/>-->
+<!--    <menuitem id="registration" name="Registration" action="registration_action"-->
+<!--              parent="admission.admission"/>-->
+<!--    <menuitem id="configuration" name="Configuration"-->
+<!--              parent="admission.admission"/>-->
+
+<!--</odoo>-->
+
+<odoo>
+    <!-- Subject Menu and Tree View -->
+
+    <record id="action_subject_tree" model="ir.actions.act_window">
+        <field name="name">Subjects</field>
+        <field name="res_model">admission.subject</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <record id="view_subject_tree" model="ir.ui.view">
+        <field name="name">Subject Tree</field>
+        <field name="model">admission.subject</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="action_standard_tree" model="ir.actions.act_window">
+        <field name="name">Standards</field>
+        <field name="res_model">admission.standard</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_standard_tree" model="ir.ui.view">
+        <field name="name">Standard Tree</field>
+        <field name="model">admission.standard</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="medium"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_standard_form" model="ir.ui.view">
+        <field name="name">Standard Form</field>
+        <field name="model">admission.standard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="medium"/>
+                    </group>
+                    <field name="subject_line_ids">
+                        <tree>
+                            <field name="subject_id"/>
+                            <field name="teacher_ids"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_registration_tree" model="ir.actions.act_window">
+        <field name="name">Registrations</field>
+        <field name="res_model">admission.registration</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_registration_tree" model="ir.ui.view">
+        <field name="name">Registration Tree</field>
+        <field name="model">admission.registration</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="age"/>
+                <field name="medium"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_registration_form" model="ir.ui.view">
+        <field name="name">Registration Form</field>
+        <field name="model">admission.registration</field>
+        <field name="arch" type="xml">
+             <form>
+                <header>
+                    <button name="action_start" string="Start" type="object" class="btn-primary"/>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-success" invisible="state not in ['in_progress']"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="state not in ['in_progress']"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="date_of_birth"/>
+                        <field name="age" readonly="1"/>
+                        <field name="medium"/>
+                        <field name="standard_id"/>
+
+                    </group>
+                    <field name="fee_line_ids">
+                        <tree>
+                            <field name="product_id"/>
+                            <field name="quantity"/>
+                            <field name="untaxed_amount"/>
+                            <field name="total_amount"/>
+                        </tree>
+                    </field>
+                    <notebook>
+                    <page string="Subjects">
+                        <field name="subject_ids"/>
+                    </page>
+                    <page string="Teachers">
+                        <field name="teacher_ids"/>
+                    </page>
+                    </notebook>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Registration Menu and Views -->
+    <menuitem id="menu_admission" name="Admission" sequence="5" />
+
+    <menuitem id="menu_registration" name="Registrations" parent="menu_admission" action="action_registration_tree" sequence="10"/>
+
+    <menuitem id="menu_admission_configuration" name="Configuration" parent="menu_admission" sequence="10"/>
+
+    <menuitem id="menu_subject" name="Subjects" parent="menu_admission_configuration" action="action_subject_tree" sequence="10"/>
+
+    <!-- Standard Menu and Views -->
+    <menuitem id="menu_standard" name="Standards" parent="menu_admission_configuration" action="action_standard_tree" sequence="20"/>
+
+</odoo>

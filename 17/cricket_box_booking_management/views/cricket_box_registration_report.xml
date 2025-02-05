@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="portal_my_home" name="My Cricket Boxes" inherit_id="portal.portal_my_home" customize_show="True">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/purchase/static/src/img/rfq.svg'"/>
+                <t t-set="title">My Cricket Boxes</t>
+                <t t-set="url" t-value="'/my/cricket_box/registrations'"/>
+                <t t-set="config_card" t-value="True"/>
+                <t t-set="text">Manage your Cricket Boxes bookings.</t>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="cricket_box_template_data" name="My Cricket Box booking">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Cricket Box Booking</t>
+            </t>
+            <t t-if="not registrations">
+                <p class="alert alert-warning">There are currently no booking available in your account.</p>
+            </t>
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th class='d-none d-md-table-cell'>Name</th>
+                        <th>Booking Date</th>
+                        <th>Box</th>
+                        <th>Time Slot</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="registrations" t-as="reg">
+                        <tr>
+                            <td>
+                                <span t-field="reg.name"/>
+                            </td>
+                            <td>
+                                <span t-field="reg.date"/>
+                            </td>
+                            <td>
+                                <span t-field="reg.box_id"/>
+                            </td>
+                            <td>
+                                <t t-foreach="reg.time_slot_id" t-as="slot">
+                                    <li class="badge rounded-pill text-bg-success">
+                                        <t t-esc="slot.name"/>
+                                    </li>
+                                </t>
+                            </td>
+                            <td>
+                                <t t-if="reg.state == 'invoiced'" name="reg_status_posted">
+                                    <span t-if="reg.state == 'invoiced'"
+                                          class="badge rounded-pill text-bg-success">
+                                        <i class="fa fa-fw fa-check" aria-label="Paid" title="Paid" role="img"/>
+                                        <span class="d-none d-md-inline">Paid</span>
+                                    </span>
+                                </t>
+                                <t t-elif="reg.state in ['draft','done']">
+                                    <span class="badge rounded-pill text-bg-info">
+                                        <i class="fa fa-fw fa-clock-o" aria-label="Opened" title="Opened" role="img"/>
+                                        <span class="d-none d-md-inline">Waiting for Payment</span>
+                                    </span>
+                                </t>
+                                <t t-elif="reg.state == 'canceled'">
+                                    <span class="badge rounded-pill text-bg-danger">
+                                        <i class="fa fa-fw fa-remove" aria-label="Cancelled" title="Cancelled"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">Cancelled</span>
+                                    </span>
+                                </t>
+                            </td>
+                            <td>
+                                <t t-if="reg.state == 'invoiced'">
+                                    <a t-att-href="'/my/cricket_box/download_pass/%s' % reg.name"
+                                       class="btn btn-primary">
+                                        Download Pass
+                                    </a>
+                                    <a t-att-href="'/my/cricket_box/cancel/%s' % reg.name"
+                                       class="btn btn-primary">
+                                        Cancel
+                                    </a>
+                                </t>
+                                <t t-elif="reg.state == 'canceled'">
+                                </t>
+                                <t t-else="">
+                                    <a t-att-href="'/my/cricket_box/pay/%s' % reg.name"
+                                       class="btn btn-primary">
+                                        Pay Now
+                                    </a>
+                                    <a t-att-href="'/my/cricket_box/cancel/%s' % reg.name"
+                                       class="btn btn-primary">
+                                        Cancel
+                                    </a>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_cricket_boxes" name="Cricket Boxes">
+        <t t-call="website.layout">
+            <div class="container mt-5">
+                <h2>Available Cricket Boxes</h2>
+                <div class="row">
+                    <t t-foreach="cricket_boxes" t-as="box">
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                <img
+                                        t-att-src="image_data_uri(box.box_poster)"
+                                        style="max-width: 250px;"
+                                        class="card-img-top"
+                                        alt="Cricket Box Image"/>
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <t t-esc="box.name"/>
+                                    </h5>
+                                    <p>
+                                        <strong>Email:</strong>
+                                        <t t-esc="box.email"/>
+                                    </p>
+                                    <p>
+                                        <strong>Phone no.:</strong>
+                                        <t t-esc="box.phone"/>
+                                    </p>
+                                    <p>
+                                        <strong>Price/Hour:</strong>
+                                        <t t-esc="box.price"/>
+                                    </p>
+                                    <p>
+                                        <strong>Location:</strong>
+                                        <t t-esc="box.city"/>
+                                    </p>
+                                    <a t-att-href="'/my/cricket_box/%d' % box.id" class="btn btn-primary">View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_cricket_box_details" name="Cricket Box Details">
+        <t t-call="website.layout">
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-12">
+                        <h3>Cricket Box:
+                            <t t-esc="cricket_box.name"/>
+                        </h3>
+                        <p>
+                            <strong>Email:</strong>
+                            <t t-esc="cricket_box.email"/>
+                        </p>
+                        <p>
+                            <strong>Phone no.:</strong>
+                            <t t-esc="cricket_box.phone"/>
+                        </p>
+                        <p>
+                            <strong>Price/Hour:</strong>
+                            <t t-esc="cricket_box.price"/>
+                        </p>
+                        <p>
+                            <strong>Location:</strong>
+                            <t t-esc="cricket_box.street"/>
+                            <t t-esc="cricket_box.city"/>
+                            <t t-esc="cricket_box.zip"/>
+                        </p>
+                        <p>
+                            <strong>Description:</strong>
+                            <t t-esc="cricket_box.about_cricket_box"/>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h3>Available Dates</h3>
+                        <t t-if="select_dates">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Available Time Slots</th>
+                                        <th>Booked Time Slots</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="select_dates" t-as="date">
+                                        <tr>
+                                            <td>
+                                                <a t-esc="date.date" class="text-primary"/>
+                                            </td>
+                                            <td>
+                                                <ul>
+                                                    <t t-if="date.available_time_slots_ids">
+                                                        <t t-foreach="date.available_time_slots_ids" t-as="slot">
+                                                            <li class="badge rounded-pill text-bg-success">
+                                                                <t t-esc="slot.name"/>
+                                                            </li>
+                                                        </t>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <p class="badge rounded-pill text-bg-danger">No slot available
+                                                        </p>
+                                                    </t>
+
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <ul>
+                                                    <t t-foreach="date.booked_time_slots_ids" t-as="slot">
+                                                        <li class="badge rounded-pill text-bg-danger">
+                                                            <t t-esc="slot.name"/>
+                                                        </li>
+                                                    </t>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                        <t t-else="">
+                            <p>No available dates at the moment.</p>
+                        </t>
+                    </div>
+                    <t t-if="select_dates.available_time_slots_ids">
+                        <a class="btn btn-primary" t-att-href="'/my/cricket_box/register/%d' % (cricket_box.id)">Book
+                            Slot
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+
+    <template id="portal_cricket_box_registration" name="Cricket Box Registration">
+        <t t-call="website.layout">
+            <div class="card mt-4 text-center mx-auto" style="border-radius: 15px; background-color: #97e9f0; max-width: 600px;">
+                <div class="card-body text-center">
+
+                    <form method="POST" action="">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <br/>
+                        <div class="form-group row">
+                            <label for="box_name" class="col-sm-2 col-form-label">Box:</label>
+                            <div class="col-sm-10">
+                                <input type="text" required="true" id="box_name" class="form-control"
+                                       readonly="readonly"
+                                       t-att-value="cricket_box.name" onchange="this.form.submit()"
+                                       style="border-radius: 15px; background-color: #000000; border-color: #97e9f0;"/>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="name" class="col-sm-2 col-form-label">Date</label>
+                            <div class="col-sm-10">
+                                <input type="date" class="form-control " id="date" placeholder="Enter Date "
+                                       t-att-value="selected_date if selected_date else ''" name="date"
+                                       style=" border-radius: 15px 15px 15px 15px; background-color: #000000 ;  border-color: #97e9f0;"/>
+                            </div>
+                        </div>
+                        <br/>
+                        <div>
+                            <button class="btn btn-secondary" name="action" value="check" type="submit">Check</button>
+                        </div>
+                        <br/>
+                        <div>
+                            <t t-if="available_time_slots">
+                                <label>Available Time Slots:</label>
+                                <t t-foreach="available_time_slots" t-as="slot">
+                                    <input type="checkbox" name="time_slot_ids" t-att-value="slot.id"/>
+                                    <li class="badge rounded-pill text-bg-success">
+                                        <t t-esc="slot.name"/>
+                                    </li>
+                                </t>
+                            </t>
+                            <t t-elif="not available_time_slots">
+                                <p class="text-danger">No time slots available for the selected date.</p>
+                            </t>
+                        </div>
+                        <button type="submit" class="btn btn-primary ">Submit</button>
+                    </form>
+
+                    <t t-if="error">
+                        <div class="alert alert-danger">
+                            <t t-esc="error"/>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!--  Inheriting invoice portal views and add button  -->
+    <template id="custom_portal_record_sidebar"
+              inherit_id="account.portal_invoice_page">
+        <xpath expr="//div[hasclass('o_portal_invoice_sidebar')]//div[hasclass('o_download_pdf')]"
+               position="before">
+            <div class="flex-grow-1" style="margin-bottom:5px;"
+                 t-if="invoice.box_ticket_id and invoice.invoice_origin == 'Cricket Box Booking' and invoice.payment_state == 'paid'">
+                <a class="btn btn-primary d-block"
+                   t-attf-href="/report/pdf/cricket_box_booking_management.action_report_cricket_box_pass/{{invoice.box_ticket_id.id}}">
+                    <i class="fa fa-cloud-download"/>
+                    Download Pass
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+
+</odoo>
